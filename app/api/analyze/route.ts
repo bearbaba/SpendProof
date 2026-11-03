@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createHash, timingSafeEqual } from 'node:crypto';
 import { evaluate, validProposal, type ServAssessment } from '../../../lib/policy';
-import { proposalDigest, signDecision } from '../../../lib/attestation';
+import { recordDigest, signDecision } from '../../../lib/attestation';
 
 export const runtime = 'nodejs';
 export const maxDuration = 25;
@@ -17,7 +17,12 @@ function secretMatches(value: string, expected: string) {
 function parseAssessment(raw: string): ServAssessment {
   const text = raw.trim().replace(/^\x60{3}(?:json)?\s*/i, '').replace(/\s*\x60{3}$/, '');
   const object = JSON.parse(text) as Record<string, unknown>;
-  if (typeof object.summary !== 'string' || !['low', 'medium', 'high'].includes(String(object.risk))) {
+  if (typeof object.summary !== 'string' || object.summary.trim().length < 8 ||
+      !['low', 'medium', 'high'].includes(String(object.risk)) ||
+      !['REVIEW', 'DENY'].includes(String(object.recommendation)) ||
+      !Array.isArray(object.concerns) || !Array.isArray(object.evidenceGaps) ||
+      !object.concerns.every(v => typeof v === 'string') ||
+      !object.evidenceGaps.every(v => typeof v === 'string')) {
     throw Error('Invalid SERV output');
   }
   const list = (value: unknown) => Array.isArray(value)
@@ -93,7 +98,9 @@ export async function POST(req: NextRequest) {
 
     const selectedModel = String(result.model || model).slice(0, 150);
     const attestation = signDecision(auditSecret, {
-      requestDigest: proposalDigest(proposal),
+      requestDigest: recordDigest(proposal),
+      policyDigest: recordDigest(policy),
+      assessmentDigest: recordDigest(serv),
       policyVerdict: 'REVIEW',
       risk: serv.risk,
       recommendation: serv.recommendation,
