@@ -9,6 +9,7 @@ import {
   ShieldCheck, Sparkles, Wallet, XCircle, Zap
 } from 'lucide-react';
 import { evaluate, type Decision, type Proposal, type ServAssessment } from '../lib/policy';
+import { buildKiteSteps, evaluateCatalogReview, type CatalogReview } from '../lib/kite';
 import type { AuditAttestation } from '../lib/attestation';
 
 type Area = 'workspace'|'audit'|'passport';
@@ -58,18 +59,6 @@ const cases: Record<CaseId, { label:string; sub:string; proposal:Proposal }> = {
 function usd(value: number) {
   return new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',minimumFractionDigits:2,maximumFractionDigits:2}).format(Number.isFinite(value)?value:0);
 }
-function shell(value: string) {
-  return "'" + value.replace(/'/g, "'\\''") + "'";
-}
-function kiteCommands(p: Proposal) {
-  const intent = p.task.slice(0, 160);
-  return [
-    { id:'discover', title:'Discover provider', description:'Inspect real services and x402 terms from the Kite catalog.', command:'ksearch services list --query ' + shell(intent) + ' --payment-approach x402_http --asset USDC --limit 10 --output json' },
-    { id:'session', title:'Request a spending session', description:'Requires explicit passkey approval outside this application.', command:'kpass agent:session create --task-summary ' + shell(intent) + ' --max-amount-per-tx ' + shell(p.perTxUsd.toFixed(2)) + ' --max-total-amount ' + shell(Math.min(p.budgetUsd,p.remainingUsd).toFixed(2)) + ' --ttl 1h --assets USDC --payment-approach x402_http --output json' },
-    { id:'execute', title:'Execute only after approval', description:'Use only after checking the exact provider URL and session scope.', command:'kpass agent:session execute --url ' + shell(p.endpoint) + ' --method ' + p.method + ' --output json' },
-  ];
-}
-
 function BrandMark({ small=false }:{small?:boolean}) {
   return <span className={'brand-mark'+(small?' small':'')} aria-hidden="true">
     <ShieldCheck size={small?18:23} strokeWidth={2.3}/>
@@ -90,17 +79,26 @@ export default function Page() {
   const [copied,setCopied] = useState('');
   const [notifications,setNotifications] = useState('');
   const [verification,setVerification] = useState<'idle'|'checking'|'verified'|'invalid'>('idle');
+  const [catalogReview,setCatalogReview] = useState<CatalogReview>({
+    serviceId:'', endpoint:'', priceUsd:0, userConfirmed:false,
+  });
   const policy = useMemo(()=>evaluate(proposal),[proposal]);
   const passed = policy.checks.filter(c=>c.passed).length;
-  const canHandoff = Boolean(report?.mode==='serv-live' && report.policy.verdict==='REVIEW' && report.serv?.recommendation==='REVIEW' && report.serv.risk!=='high' && report.proposal.method==='GET' && report.attestation);
-  const commands = useMemo(()=>kiteCommands(proposal),[proposal]);
+  const servApproved = Boolean(report?.mode==='serv-live' && report.policy.verdict==='REVIEW' && report.serv?.recommendation==='REVIEW' && report.serv.risk!=='high' && report.proposal.method==='GET' && report.attestation);
+  const catalogChecks = useMemo(()=>evaluateCatalogReview(proposal,catalogReview),[proposal,catalogReview]);
+  const catalogReady = catalogChecks.every(check=>check.passed);
+  const canHandoff = servApproved && catalogReady;
+  const commands = useMemo(()=>buildKiteSteps(proposal,catalogReview,servApproved),[proposal,catalogReview,servApproved]);
 
   function update<K extends keyof Proposal>(key:K,value:Proposal[K]) {
     setProposal(v=>({...v,[key]:value}));
+    setCatalogReview(v=>({...v,userConfirmed:false}));
     setReport(null);setVerification('idle');setError('');setNotifications('');
   }
   function selectCase(id:CaseId) {
-    setCaseId(id);setProposal({...cases[id].proposal});setReport(null);setError('');setNotifications('');
+    setCaseId(id);setProposal({...cases[id].proposal});
+    setCatalogReview({serviceId:'',endpoint:'',priceUsd:0,userConfirmed:false});
+    setReport(null);setError('');setNotifications('');
     setArea('workspace');
   }
   function localCheck() {
@@ -267,8 +265,18 @@ export default function Page() {
           <div className="handoff-banner"><div className="handoff-badge"><Fingerprint size={24}/></div><div><h3>No payment is initiated by this browser.</h3><p>Kite currently exposes the approved flow through its CLI and agent skills. No public HTTP API is documented, so SpendProof generates commands instead of pretending to complete an x402 purchase. <a href="https://docs.gokite.ai/api-reference" target="_blank" rel="noreferrer">View the official API status <ExternalLink size={13}/></a></p></div></div>
           <section className="panel handoff-panel">
             <div className="panel-header"><div className="panel-title"><span className="panel-icon"><Code2 size={19}/></span><div><h3>Verified workflow, not automatic payment</h3><p>Copy the commands into your authenticated Kite-enabled terminal.</p></div></div><span className="panel-label">EXTERNAL CLI</span></div>
-            {!canHandoff && <div className="blocked-alert"><ShieldAlert size={17}/> Handoff requires passing local policy, a live SERV assessment without a deny/high-risk outcome, and a GET-only provider request. You must still verify the discovered service and approve Kite separately.</div>}
-            <div className="command-list">{commands.map((c,i)=><div className="command-block" key={c.id}><div className="command-title"><span className="command-index">{i+1}</span><div><strong>{c.title}</strong><p>{c.description}</p></div><span className="command-state">{i===0?'DISCOVER':i===1?'AUTHORIZE':'PAY'}</span></div><div className={'terminal '+(!canHandoff?'disabled':'')}><code>{canHandoff?c.command:'Complete the safety checks to unlock this command.'}</code><button disabled={!canHandoff} title={'Copy '+c.title} onClick={()=>copy(c.command,c.id)}>{copied===c.id?<Check size={17}/>:<Copy size={17}/>}</button></div></div>)}</div>
+            <div className="catalog-review">
+              <div className="catalog-review-title"><div><h3>Catalog cross-check</h3><p>Run discovery and inspection in your Kite terminal, then enter the exact information you observed. This form does not fetch or authenticate catalog records.</p></div><span>{catalogChecks.filter(c=>c.passed).length}/{catalogChecks.length} checks</span></div>
+              <div className="field-row">
+                <label className="field"><span>Kite catalog service ID</span><input value={catalogReview.serviceId} maxLength={120} onChange={e=>setCatalogReview(v=>({...v,serviceId:e.target.value,userConfirmed:false}))} placeholder="Copy from ksearch output" autoComplete="off"/></label>
+                <label className="field"><span>Listed price (USDC)</span><input type="number" min="0" step="0.01" value={catalogReview.priceUsd} onChange={e=>setCatalogReview(v=>({...v,priceUsd:Number(e.target.value),userConfirmed:false}))}/></label>
+              </div>
+              <label className="field"><span>Catalog endpoint (must match exactly)</span><input type="url" value={catalogReview.endpoint} maxLength={1000} onChange={e=>setCatalogReview(v=>({...v,endpoint:e.target.value,userConfirmed:false}))} placeholder="Paste endpoint from the inspected service"/></label>
+              <label className="check-field"><input type="checkbox" checked={catalogReview.userConfirmed} onChange={e=>setCatalogReview(v=>({...v,userConfirmed:e.target.checked}))}/><span><strong>I independently compared the price and URL with the live Kite catalog.</strong><small>This is a manual acknowledgement, not a verified API response. Never paste private keys or Passport sessions.</small></span></label>
+              <div className="catalog-checks">{catalogChecks.map(c=><div key={c.id} className={c.passed?'review-pass':'review-fail'}>{c.passed?<Check size={14}/>:<XCircle size={14}/>} {c.label}</div>)}</div>
+            </div>
+            {!canHandoff && <div className="blocked-alert"><ShieldAlert size={17}/> Discovery remains available. Payment commands require a signed live SERV review and a complete manual Kite catalog cross-check. The actual session must still be approved with your passkey.</div>}
+            <div className="command-list">{commands.map((c,i)=><div className="command-block" key={c.id}><div className="command-title"><span className="command-index">{i+1}</span><div><strong>{c.title}</strong><p>{c.description}</p></div><span className="command-state">{c.stage}</span></div><div className={'terminal '+(c.command===null?'disabled':'')}><code>{c.command??'Locked until the relevant review and authorization requirements are satisfied.'}</code><button disabled={c.command===null} title={'Copy '+c.title} onClick={()=>copy(c.command??'',c.id)}>{copied===c.id?<Check size={17}/>:<Copy size={17}/>}</button></div></div>)}</div>
             {notifications && <div className="alert-error" role="alert">{notifications}</div>}
             <div className="handoff-footer"><span><ShieldCheck size={18}/> The user approves any real spending in Kite Passport with a passkey.</span><a href="https://agentpassport.ai/dashboard" target="_blank" rel="noreferrer">Open Passport dashboard <ArrowUpRight size={16}/></a></div>
           </section>
