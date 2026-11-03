@@ -11,7 +11,7 @@ SpendProof evaluates whether an AI agent's proposed API purchase is within expli
 - User-controlled, clearly labeled test scenarios and JSON audit export.
 - Server-HMAC-signed V2 decision receipt that binds the complete proposal, policy decision and SERV explanation to a verifiable record (not a payment receipt).
 - Post-payment local reconciliation of user-entered session/service/price/activity evidence. Matching data remains **unverified**, not a cryptographic payment proof.
-- Kite Passport CLI handoff (discover, inspect exact service, compare price/endpoint, passkey-approved one-payment session, execute and inspect activity) — no server-side custody.
+- Kite Passport CLI handoff (discover, inspect the exact service, compare price/endpoint, review allowance fallback, passkey-approve and select a one-payment session, check active session, execute and inspect activity) — no server-side custody.
 - No payment is executed by this web UI. The external Kite CLI remains the only execution channel. Client-entered budgets are advisory until a human approves a scope-limited Kite session.
 
 ## Setup
@@ -42,7 +42,7 @@ Read [Kite integration and pending acceptance](docs/KITE_INTEGRATION.md) before 
 
 ## Safety
 
-All spending limits are enforced by deterministic code. AI analysis is advisory only. Do not paste private keys, Passport sessions, auth tokens or payment credentials into the application. Kite payment execution requires a separately approved, scoped session and an external `kpass` workflow. User-entered service prices and evidence are unverified claims.
+All spending limits are enforced by deterministic code. AI analysis is advisory only. Do not paste private keys, Passport sessions, auth tokens or payment credentials into the application. Kite payment execution requires a separately approved, scoped session and an external `kpass` workflow. **Kite can charge a preapproved recurring allowance when a session is absent or expired**; verify allowance status and active session in Passport immediately before any CLI execution. User-entered service prices and evidence are unverified claims.
 
 Official references: https://www.openserv.ai/hackathon-2 · https://www.openserv.ai/ · https://docs.gokite.ai/passport/payments · https://docs.gokite.ai/api-reference
 

@@ -33,6 +33,21 @@ After running the CLI, the Kite handoff screen accepts a manually entered sessio
 
 Do not insert private keys, access tokens, passkeys, or session secrets. Check the actual transaction via Kite Passport before presenting it as executed.
 
+## Important: recurring-allowance fallback
+
+Kite's official [Allowance and sessions](https://docs.gokite.ai/passport/payments/allowance) page says that an active session is used first, **but an expired or absent session can fall back to an existing recurring allowance without a new passkey prompt**. As a result, merely creating a one-payment session is **not a guarantee** that a later API request cannot charge the allowance.
+
+SpendProof now keeps the execution command locked by default. The operator must:
+
+1. Inspect any existing recurring allowance on the Kite Passport dashboard, and disable fallback spending where strict one-purchase isolation is required.
+2. Approve the exact-priced 15-minute session with their passkey.
+3. Select the approved session with `kpass agent:session use --session-id <SESSION_ID> --output json`.
+4. Immediately before paying, inspect `kpass agent:session list --status active --output json` and ensure the intended session is active and not expired.
+5. Confirm those checks in SpendProof to unlock an external CLI command. This is a **manual acknowledgement only**; SpendProof does not authenticate the Kite session state.
+6. Do not execute if the session expires, the intended scope is absent, or the allowance is still enabled and could pay unexpectedly. Never automatically retry a failed payment.
+
+The real payment rules are enforced by Kite, **not by a website checkbox**. The site does not certify session validity.
+
 ## Next acceptance work
 
 - Configure real SERV credentials and validate actual inference success/failure output.
