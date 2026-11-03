@@ -10,14 +10,14 @@ import {
 } from 'lucide-react';
 import { evaluate, type Decision, type Proposal, type ServAssessment } from '../lib/policy';
 import { buildKiteSteps, evaluateCatalogReview, type CatalogReview } from '../lib/kite';
-import type { AuditAttestation } from '../lib/attestation';
+import type { DecisionRecord } from '../lib/attestation';
 
 type Area = 'workspace'|'audit'|'passport';
 type CaseId = 'within'|'over'|'missing';
 type Report = {
   createdAt: string; mode: 'local-policy'|'serv-live'|'policy';
   proposal: Proposal; policy: Decision; serv: ServAssessment|null;
-  paymentExecuted: false; model?: string; attestation?: AuditAttestation|null;
+  paymentExecuted: false; model?: string; attestation?: DecisionRecord|null;
 };
 
 const cases: Record<CaseId, { label:string; sub:string; proposal:Proposal }> = {
@@ -129,7 +129,7 @@ export default function Page() {
       const response=await fetch('/api/verify',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({attestation:report.attestation}),
+        body:JSON.stringify({attestation:report.attestation,proposal:report.proposal,policy:report.policy,serv:report.serv}),
       });
       const data=await response.json();
       setVerification(response.ok && data.authentic===true?'verified':'invalid');
@@ -255,7 +255,7 @@ export default function Page() {
             <div className="audit-section-title">Control-by-control evidence</div>
             <div className="audit-records">{report.policy.checks.map((c,i)=><div key={c.id}><span className="record-number">{String(i+1).padStart(2,'0')}</span><Dot ok={c.passed}/><div><strong>{c.title}</strong><p>{c.detail}</p></div><span className={c.passed?'record-passed':'record-blocked'}>{c.passed?'PASS':'FAIL'}</span></div>)}</div>
             {report.serv && <div className="serv-audit"><div className="audit-section-title">SERV Reasoning assessment · {report.model||'configured model'}</div><p>{report.serv.summary}</p><strong>Evidence gaps</strong><ul>{report.serv.evidenceGaps.length?report.serv.evidenceGaps.map((x,i)=><li key={i}>{x}</li>):<li>Provider verification still requires an external source.</li>}</ul></div>}
-            {report.attestation && <div className="signed-proof"><div><strong><ShieldCheck size={16}/> Server-signed decision</strong><p>{verification==='verified'?'Authentic SpendProof decision · no payment verified':verification==='invalid'?'Verification failed · this decision is not authenticated':'HMAC-SHA256 authentication of the SERV decision, not a merchant or transaction receipt.'}</p></div><button className="btn-outline" disabled={verification==='checking'} onClick={verifyAttestation}>{verification==='checking'?'Checking…':'Verify signature'}</button></div>}
+            {report.attestation && <div className="signed-proof"><div><strong><ShieldCheck size={16}/> Server-signed decision</strong><p>{verification==='verified'?'Purchase, policy and SERV assessment verified · no payment verified':verification==='invalid'?'Verification failed · this decision is not authenticated':'HMAC-SHA256 binds the purchase intent, policy checks and SERV assessment. This is not a payment receipt.'}</p></div><button className="btn-outline" disabled={verification==='checking'} onClick={verifyAttestation}>{verification==='checking'?'Checking…':'Verify signature'}</button></div>}
             <div className="audit-export"><span><Info size={17}/> Reports are not signed on-chain or merchant-verified.</span><button className="btn-dark" onClick={exportAudit}><Download size={16}/> Export JSON audit</button></div></>}
           </section>
         </>}
