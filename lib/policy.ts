@@ -45,6 +45,7 @@ export function evaluate(p: Proposal, evaluatedAt = new Date().toISOString()): D
   const checks: Check[] = [
     { id:'task', title:'Task and provider', detail:'A clear purpose and named provider are required.', passed:p.task.trim().length >= 12 && p.provider.trim().length >= 2 },
     { id:'endpoint', title:'Public HTTPS endpoint', detail:'URL format only; the provider and endpoint have not been independently verified.', passed:safeHttps(p.endpoint) },
+    { id:'method', title:'GET-only payment prototype', detail:'POST requests require an explicit reviewed body and are not enabled in this version.', passed:p.method==='GET' },
     { id:'budget', title:'Within task budget', detail:'Cost cannot exceed the user-defined total budget.', passed:price !== null && budget !== null && price <= budget },
     { id:'cap', title:'Within per-payment cap', detail:'Cost cannot exceed the single-payment limit.', passed:price !== null && cap !== null && price <= cap },
     { id:'remaining', title:'Within remaining allocation', detail:'Cost cannot exceed the remaining session allowance.', passed:price !== null && remaining !== null && price <= remaining },
