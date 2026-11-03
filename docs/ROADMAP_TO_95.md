@@ -47,7 +47,7 @@ After `npm install`, run `npm run smoke:serv`, then `npm run dev`. The smoke com
 4. Inspect the exact service with `ksearch services get --service-id <SERVICE_ID> --output json`. Copy only public service URL / price / ID into SpendProof; do not paste credentials.
 5. Run live SERV analysis. Match the catalog price and endpoint. Check signed decision.
 6. Use the generated `kpass agent:session create` command for a strictly capped one-payment session, approve on Kite Passport using passkey.
-7. Execute once using `kpass agent:session execute`. Inspect CLI result and `kpass activity --limit 20 --output json`.
+7. Check whether any recurring allowance could pay if the session expires. Select and inspect the active approved session immediately before execution. Execute once using `kpass agent:session execute`. Inspect CLI result and `kpass activity --limit 20 --output json`.
 8. Enter reported public activity details into SpendProof. Its result remains **MATCHED_UNVERIFIED** until independent settlement confirmation.
 9. Export the audit record; remember the server signature authenticates only the decision, not the external payment.
 
