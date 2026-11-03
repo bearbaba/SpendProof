@@ -11,6 +11,7 @@ import {
 import { evaluate, type Decision, type Proposal, type ServAssessment } from '../lib/policy';
 import { buildKiteSteps, evaluateCatalogReview, type CatalogReview } from '../lib/kite';
 import type { DecisionRecord } from '../lib/attestation';
+import { emptyObservation, reconcileObservation, type PaymentObservation } from '../lib/reconciliation';
 
 type Area = 'workspace'|'audit'|'passport';
 type CaseId = 'within'|'over'|'missing';
@@ -79,6 +80,7 @@ export default function Page() {
   const [copied,setCopied] = useState('');
   const [notifications,setNotifications] = useState('');
   const [verification,setVerification] = useState<'idle'|'checking'|'verified'|'invalid'>('idle');
+  const [observation,setObservation] = useState<PaymentObservation>({...emptyObservation});
   const [catalogReview,setCatalogReview] = useState<CatalogReview>({
     serviceId:'', endpoint:'', priceUsd:0, userConfirmed:false,
   });
@@ -89,14 +91,17 @@ export default function Page() {
   const catalogReady = catalogChecks.every(check=>check.passed);
   const canHandoff = servApproved && catalogReady;
   const commands = useMemo(()=>buildKiteSteps(proposal,catalogReview,servApproved),[proposal,catalogReview,servApproved]);
+  const reconciliation = useMemo(()=>reconcileObservation(proposal,catalogReview,observation),[proposal,catalogReview,observation]);
 
   function update<K extends keyof Proposal>(key:K,value:Proposal[K]) {
     setProposal(v=>({...v,[key]:value}));
+    setObservation({...emptyObservation});
     setCatalogReview(v=>({...v,userConfirmed:false}));
     setReport(null);setVerification('idle');setError('');setNotifications('');
   }
   function selectCase(id:CaseId) {
     setCaseId(id);setProposal({...cases[id].proposal});
+    setObservation({...emptyObservation});
     setCatalogReview({serviceId:'',endpoint:'',priceUsd:0,userConfirmed:false});
     setReport(null);setError('');setNotifications('');
     setArea('workspace');
@@ -144,7 +149,7 @@ export default function Page() {
   }
   async function exportAudit() {
     if(!report)return;
-    const body={schema:'spendproof.audit.v1',...report,explanation:'Local SHA-256 cannot prove origin. Server HMAC attestation authenticates only a SpendProof decision, never provider legitimacy or payment execution.'};
+    const body={schema:'spendproof.audit.v2',...report,externalObservation:reconciliation.outcome==='NOT_RECORDED'?null:{observation,reconciliation,source:'USER_ENTERED',coveredByServerSignature:false},explanation:'Local SHA-256 is only a local checksum. The HMAC signs the purchase intent, policy and SERV assessment, NOT the user-entered Kite evidence. Neither proves a payment.'};
     const canonical=JSON.stringify(body);
     const bytes=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(canonical));
     const checksum=Array.from(new Uint8Array(bytes)).map(x=>x.toString(16).padStart(2,'0')).join('');
@@ -277,6 +282,28 @@ export default function Page() {
             </div>
             {!canHandoff && <div className="blocked-alert"><ShieldAlert size={17}/> Discovery remains available. Payment commands require a signed live SERV review and a complete manual Kite catalog cross-check. The actual session must still be approved with your passkey.</div>}
             <div className="command-list">{commands.map((c,i)=><div className="command-block" key={c.id}><div className="command-title"><span className="command-index">{i+1}</span><div><strong>{c.title}</strong><p>{c.description}</p></div><span className="command-state">{c.stage}</span></div><div className={'terminal '+(c.command===null?'disabled':'')}><code>{c.command??'Locked until the relevant review and authorization requirements are satisfied.'}</code><button disabled={c.command===null} title={'Copy '+c.title} onClick={()=>copy(c.command??'',c.id)}>{copied===c.id?<Check size={17}/>:<Copy size={17}/>}</button></div></div>)}</div>
+            <section className="receipt-review" aria-labelledby="receipt-review-title">
+              <div className="receipt-review-header">
+                <div><div className="section-kicker">OPTIONAL EVIDENCE</div><h3 id="receipt-review-title">Reconcile Kite activity</h3><p>After executing a real transaction outside SpendProof, compare the reported session, service, price and activity ID. No live Kite API is called here.</p></div>
+                <span className="receipt-origin">USER-ENTERED · NOT VERIFIED</span>
+              </div>
+              <div className="field-row">
+                <label className="field"><span>Reported payment status</span><select value={observation.status} onChange={e=>setObservation(o=>({...o,status:e.target.value as PaymentObservation['status']}))}><option value="pending">Pending / unknown</option><option value="failed">Failed</option><option value="success">Success reported</option></select></label>
+                <label className="field"><span>Reported amount (USDC)</span><input type="number" min="0" step="0.01" value={observation.amountUsd} onChange={e=>setObservation(o=>({...o,amountUsd:Number(e.target.value)}))}/></label>
+              </div>
+              <div className="field-row">
+                <label className="field"><span>Kite session ID</span><input value={observation.sessionId} maxLength={160} autoComplete="off" onChange={e=>setObservation(o=>({...o,sessionId:e.target.value}))} placeholder="Public identifier only; no credentials"/></label>
+                <label className="field"><span>Catalog service ID</span><input value={observation.serviceId} maxLength={160} autoComplete="off" onChange={e=>setObservation(o=>({...o,serviceId:e.target.value}))} placeholder="Service ID shown in activity"/></label>
+              </div>
+              <label className="field"><span>Endpoint reported by Kite</span><input type="url" value={observation.endpoint} maxLength={1000} onChange={e=>setObservation(o=>({...o,endpoint:e.target.value}))} placeholder="Exact paid endpoint"/></label>
+              <label className="field"><span>Kite activity / transaction reference</span><input value={observation.activityReference} maxLength={200} autoComplete="off" onChange={e=>setObservation(o=>({...o,activityReference:e.target.value}))} placeholder="Activity ID or on-chain reference, not an authentication token"/></label>
+              <label className="check-field"><input type="checkbox" checked={observation.checkedInPassport} onChange={e=>setObservation(o=>({...o,checkedInPassport:e.target.checked}))}/><span><strong>I personally reviewed this transaction in Kite Passport activity.</strong><small>No passkey, session secret, private key or access token should ever be entered here.</small></span></label>
+              <div className={'receipt-result '+(reconciliation.outcome==='MATCHED_UNVERIFIED'?'receipt-match':reconciliation.outcome==='MISMATCH'?'receipt-mismatch':'receipt-empty')}>
+                <strong>{reconciliation.outcome==='MATCHED_UNVERIFIED'?'Reported fields match · NOT independently verified':reconciliation.outcome==='MISMATCH'?'Mismatch or incomplete evidence':'No payment evidence recorded'}</strong>
+                <p>{reconciliation.outcome==='MATCHED_UNVERIFIED'?'The manually entered details match the proposed purchase. Only Passport and an independent settlement check can confirm the payment.':reconciliation.outcome==='MISMATCH'?'Compare the service, URL, amount, status and activity reference with the actual Kite output. Do not claim success.':'Complete this optional section only after an actual Kite request. SpendProof never pretends a transaction happened.'}</p>
+                {reconciliation.checks.length>0 && <div className="receipt-checks">{reconciliation.checks.map(c=><span key={c.id} className={c.passed?'receipt-pass':'receipt-fail'}>{c.passed?<Check size={13}/>:<XCircle size={13}/>} {c.title}</span>)}</div>}
+              </div>
+            </section>
             {notifications && <div className="alert-error" role="alert">{notifications}</div>}
             <div className="handoff-footer"><span><ShieldCheck size={18}/> The user approves any real spending in Kite Passport with a passkey.</span><a href="https://agentpassport.ai/dashboard" target="_blank" rel="noreferrer">Open Passport dashboard <ArrowUpRight size={16}/></a></div>
           </section>

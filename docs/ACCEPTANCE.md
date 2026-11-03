@@ -13,6 +13,7 @@ Status: **Hackathon form submitted. Product still in development and not end-to-
 | Signed decision receipt | 4 unit tests pass locally | Live signing and public signature verification in the deployed app |
 | Kite discovery | Manual catalog review, exact URL and price comparison, CLI handoff | Real catalog service ID and actual price independently inspected |
 | Kite spending session | Least-privilege one-payment CLI command, 15-minute TTL | Human passkey-approved session with bounded limits |
+| User-supplied Kite evidence comparison | Implemented without external Kite verification | Independently check success and settlement before advertising payment proof |
 | x402 payment | Not executed; no in-app payment API | Successful real/sandbox (as allowed by track) Kite payment and receipt, no placeholder |
 | Failure path | Implemented for policy failures | Live invalid-key, expired-session, insufficient-budget and provider-error acceptance |
 | Public demo and X post | Public demo not deployed; X post URL not in repository | Public demo, walkthrough and tagged @openservai post URL archived |
