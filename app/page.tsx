@@ -9,7 +9,7 @@ import {
   ShieldCheck, Sparkles, Wallet, XCircle, Zap
 } from 'lucide-react';
 import { evaluate, type Decision, type Proposal, type ServAssessment } from '../lib/policy';
-import { buildKiteSteps, evaluateCatalogReview, type CatalogReview } from '../lib/kite';
+import { buildKiteSteps, evaluateCatalogReview, defaultKiteSafety, type CatalogReview, type KiteSafety } from '../lib/kite';
 import type { DecisionRecord } from '../lib/attestation';
 import { emptyObservation, reconcileObservation, type PaymentObservation } from '../lib/reconciliation';
 
@@ -81,6 +81,7 @@ export default function Page() {
   const [notifications,setNotifications] = useState('');
   const [verification,setVerification] = useState<'idle'|'checking'|'verified'|'invalid'>('idle');
   const [observation,setObservation] = useState<PaymentObservation>({...emptyObservation});
+  const [kiteSafety,setKiteSafety] = useState<KiteSafety>({...defaultKiteSafety});
   const [catalogReview,setCatalogReview] = useState<CatalogReview>({
     serviceId:'', endpoint:'', priceUsd:0, userConfirmed:false,
   });
@@ -89,22 +90,30 @@ export default function Page() {
   const servApproved = Boolean(report?.mode==='serv-live' && report.policy.verdict==='REVIEW' && report.serv?.recommendation==='REVIEW' && report.serv.risk!=='high' && report.proposal.method==='GET' && report.attestation);
   const catalogChecks = useMemo(()=>evaluateCatalogReview(proposal,catalogReview),[proposal,catalogReview]);
   const catalogReady = catalogChecks.every(check=>check.passed);
-  const canHandoff = servApproved && catalogReady;
-  const commands = useMemo(()=>buildKiteSteps(proposal,catalogReview,servApproved),[proposal,catalogReview,servApproved]);
+  const canCreateSession = servApproved && catalogReady && kiteSafety.allowanceReviewed;
+  const canHandoff = canCreateSession && kiteSafety.activeSessionConfirmed;
+  const commands = useMemo(()=>buildKiteSteps(proposal,catalogReview,servApproved,kiteSafety),[proposal,catalogReview,servApproved,kiteSafety]);
   const reconciliation = useMemo(()=>reconcileObservation(proposal,catalogReview,observation),[proposal,catalogReview,observation]);
 
   function update<K extends keyof Proposal>(key:K,value:Proposal[K]) {
     setProposal(v=>({...v,[key]:value}));
     setObservation({...emptyObservation});
     setCatalogReview(v=>({...v,userConfirmed:false}));
+    setKiteSafety({...defaultKiteSafety});
     setReport(null);setVerification('idle');setError('');setNotifications('');
   }
   function selectCase(id:CaseId) {
     setCaseId(id);setProposal({...cases[id].proposal});
     setObservation({...emptyObservation});
     setCatalogReview({serviceId:'',endpoint:'',priceUsd:0,userConfirmed:false});
+    setKiteSafety({...defaultKiteSafety});
     setReport(null);setError('');setNotifications('');
     setArea('workspace');
+  }
+  function changeCatalog<K extends keyof CatalogReview>(key: K, value: CatalogReview[K]) {
+    setCatalogReview(v=>({...v,[key]:value,userConfirmed:key==='userConfirmed'?Boolean(value):false}));
+    setKiteSafety({...defaultKiteSafety});
+    setObservation({...emptyObservation});
   }
   function localCheck() {
     const checked=evaluate(proposal);
@@ -113,7 +122,7 @@ export default function Page() {
   }
   async function liveAnalysis() {
     if(!access.trim()){setError('Enter the project access code to enable a real SERV request.');return;}
-    setBusy(true);setError('');setReport(null);
+    setBusy(true);setError('');setReport(null);setKiteSafety({...defaultKiteSafety});
     try{
       const response=await fetch('/api/analyze',{
         method:'POST',headers:{'Content-Type':'application/json','x-spendproof-access':access},body:JSON.stringify(proposal)
@@ -273,14 +282,19 @@ export default function Page() {
             <div className="catalog-review">
               <div className="catalog-review-title"><div><h3>Catalog cross-check</h3><p>Run discovery and inspection in your Kite terminal, then enter the exact information you observed. This form does not fetch or authenticate catalog records.</p></div><span>{catalogChecks.filter(c=>c.passed).length}/{catalogChecks.length} checks</span></div>
               <div className="field-row">
-                <label className="field"><span>Kite catalog service ID</span><input value={catalogReview.serviceId} maxLength={120} onChange={e=>setCatalogReview(v=>({...v,serviceId:e.target.value,userConfirmed:false}))} placeholder="Copy from ksearch output" autoComplete="off"/></label>
-                <label className="field"><span>Listed price (USDC)</span><input type="number" min="0" step="0.01" value={catalogReview.priceUsd} onChange={e=>setCatalogReview(v=>({...v,priceUsd:Number(e.target.value),userConfirmed:false}))}/></label>
+                <label className="field"><span>Kite catalog service ID</span><input value={catalogReview.serviceId} maxLength={120} onChange={e=>changeCatalog('serviceId',e.target.value)} placeholder="Copy from ksearch output" autoComplete="off"/></label>
+                <label className="field"><span>Listed price (USDC)</span><input type="number" min="0" step="0.01" value={catalogReview.priceUsd} onChange={e=>changeCatalog('priceUsd',Number(e.target.value))}/></label>
               </div>
-              <label className="field"><span>Catalog endpoint (must match exactly)</span><input type="url" value={catalogReview.endpoint} maxLength={1000} onChange={e=>setCatalogReview(v=>({...v,endpoint:e.target.value,userConfirmed:false}))} placeholder="Paste endpoint from the inspected service"/></label>
-              <label className="check-field"><input type="checkbox" checked={catalogReview.userConfirmed} onChange={e=>setCatalogReview(v=>({...v,userConfirmed:e.target.checked}))}/><span><strong>I independently compared the price and URL with the live Kite catalog.</strong><small>This is a manual acknowledgement, not a verified API response. Never paste private keys or Passport sessions.</small></span></label>
+              <label className="field"><span>Catalog endpoint (must match exactly)</span><input type="url" value={catalogReview.endpoint} maxLength={1000} onChange={e=>changeCatalog('endpoint',e.target.value)} placeholder="Paste endpoint from the inspected service"/></label>
+              <label className="check-field"><input type="checkbox" checked={catalogReview.userConfirmed} onChange={e=>changeCatalog('userConfirmed',e.target.checked)}/><span><strong>I independently compared the price and URL with the live Kite catalog.</strong><small>This is a manual acknowledgement, not a verified API response. Never paste private keys or Passport sessions.</small></span></label>
               <div className="catalog-checks">{catalogChecks.map(c=><div key={c.id} className={c.passed?'review-pass':'review-fail'}>{c.passed?<Check size={14}/>:<XCircle size={14}/>} {c.label}</div>)}</div>
             </div>
-            {!canHandoff && <div className="blocked-alert"><ShieldAlert size={17}/> Discovery remains available. Payment commands require a signed live SERV review and a complete manual Kite catalog cross-check. The actual session must still be approved with your passkey.</div>}
+            <div className="allowance-guard">
+              <div className="allowance-head"><ShieldAlert size={21}/><div><strong>Important: allowance fallback can bypass an expired session</strong><p>Kite may pay using a previously approved recurring allowance when your session is missing or expired. For strict one-purchase control, review and disable any fallback allowance in Passport before executing.</p></div></div>
+              <label className="check-field"><input type="checkbox" checked={kiteSafety.allowanceReviewed} onChange={e=>setKiteSafety({allowanceReviewed:e.target.checked,activeSessionConfirmed:false})}/><span><strong>I checked my Kite allowance and accepted or disabled fallback spending.</strong><small>This confirmation is manual. SpendProof cannot inspect your Passport settings.</small></span></label>
+              <label className="check-field"><input type="checkbox" disabled={!canCreateSession} checked={kiteSafety.activeSessionConfirmed} onChange={e=>setKiteSafety(v=>({...v,activeSessionConfirmed:e.target.checked}))}/><span><strong>I approved the exact session with my passkey, selected it in the CLI, and just confirmed it is active.</strong><small>Do this only after running the generated session commands. Check again immediately before payment; a session may expire at any time.</small></span></label>
+            </div>
+            {!canHandoff && <div className="blocked-alert"><ShieldAlert size={17}/> Payment execution stays locked until a signed SERV review, matching catalog, reviewed allowance, and a manually confirmed active passkey-approved session. Discovery and inspection remain available.</div>
             <div className="command-list">{commands.map((c,i)=><div className="command-block" key={c.id}><div className="command-title"><span className="command-index">{i+1}</span><div><strong>{c.title}</strong><p>{c.description}</p></div><span className="command-state">{c.stage}</span></div><div className={'terminal '+(c.command===null?'disabled':'')}><code>{c.command??'Locked until the relevant review and authorization requirements are satisfied.'}</code><button disabled={c.command===null} title={'Copy '+c.title} onClick={()=>copy(c.command??'',c.id)}>{copied===c.id?<Check size={17}/>:<Copy size={17}/>}</button></div></div>)}</div>
             <section className="receipt-review" aria-labelledby="receipt-review-title">
               <div className="receipt-review-header">
@@ -305,7 +319,7 @@ export default function Page() {
               </div>
             </section>
             {notifications && <div className="alert-error" role="alert">{notifications}</div>}
-            <div className="handoff-footer"><span><ShieldCheck size={18}/> The user approves any real spending in Kite Passport with a passkey.</span><a href="https://agentpassport.ai/dashboard" target="_blank" rel="noreferrer">Open Passport dashboard <ArrowUpRight size={16}/></a></div>
+            <div className="handoff-footer"><span><ShieldCheck size={18}/> Manual guidance only. Kite Passport enforces the actual session and allowance; SpendProof never executes payments.</span><a href="https://agentpassport.ai/dashboard" target="_blank" rel="noreferrer">Open Passport dashboard <ArrowUpRight size={16}/></a></div>
           </section>
         </>}
 
