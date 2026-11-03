@@ -14,8 +14,7 @@ export function GET() {
   return NextResponse.json({
     service:'SpendProof',
     policyEngine:'ready',
-    servMode:enabled && configured ? 'configured-live' : 'disabled',
-    servCallPerformed:false,
+    servMode:enabled && configured ? 'live-enabled-unverified' : 'disabled',
     kiteMode:'external-cli-only',
     paymentExecution:'not-available-in-app',
     independentPaymentVerification:false,
