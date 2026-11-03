@@ -63,8 +63,8 @@ function shell(value: string) {
 function kiteCommands(p: Proposal) {
   const intent = p.task.slice(0, 160);
   return [
-    { id:'discover', title:'Discover provider', description:'Inspect real services and x402 terms from the Kite catalog.', command:'ksearch services list --query ' + shell(intent) + ' --asset USDC --limit 10 --output json' },
-    { id:'session', title:'Request a spending session', description:'Requires explicit passkey approval outside this application.', command:'kpass agent:session create --task-summary ' + shell(intent) + ' --max-amount-per-tx ' + shell(p.perTxUsd.toFixed(2)) + ' --max-total-amount ' + shell(p.budgetUsd.toFixed(2)) + ' --ttl 1h --assets USDC --output json' },
+    { id:'discover', title:'Discover provider', description:'Inspect real services and x402 terms from the Kite catalog.', command:'ksearch services list --query ' + shell(intent) + ' --payment-approach x402_http --asset USDC --limit 10 --output json' },
+    { id:'session', title:'Request a spending session', description:'Requires explicit passkey approval outside this application.', command:'kpass agent:session create --task-summary ' + shell(intent) + ' --max-amount-per-tx ' + shell(p.perTxUsd.toFixed(2)) + ' --max-total-amount ' + shell(Math.min(p.budgetUsd,p.remainingUsd).toFixed(2)) + ' --ttl 1h --assets USDC --payment-approach x402_http --output json' },
     { id:'execute', title:'Execute only after approval', description:'Use only after checking the exact provider URL and session scope.', command:'kpass agent:session execute --url ' + shell(p.endpoint) + ' --method ' + p.method + ' --output json' },
   ];
 }
@@ -90,7 +90,7 @@ export default function Page() {
   const [notifications,setNotifications] = useState('');
   const policy = useMemo(()=>evaluate(proposal),[proposal]);
   const passed = policy.checks.filter(c=>c.passed).length;
-  const canHandoff = policy.verdict==='REVIEW';
+  const canHandoff = Boolean(report?.mode==='serv-live' && report.policy.verdict==='REVIEW' && report.serv?.recommendation==='REVIEW' && report.serv.risk!=='high' && report.proposal.method==='GET');
   const commands = useMemo(()=>kiteCommands(proposal),[proposal]);
 
   function update<K extends keyof Proposal>(key:K,value:Proposal[K]) {
@@ -177,7 +177,7 @@ export default function Page() {
         </section>
 
         <div className="stat-grid">
-          <div className="stat-card"><div className="stat-icon violet"><Shield size={19}/></div><div><span>Deterministic guardrails</span><strong>07 <small>checks</small></strong></div><span className="stat-foot">Always applied</span></div>
+          <div className="stat-card"><div className="stat-icon violet"><Shield size={19}/></div><div><span>Deterministic guardrails</span><strong>08 <small>checks</small></strong></div><span className="stat-foot">Always applied</span></div>
           <div className="stat-card"><div className="stat-icon blue"><Fingerprint size={19}/></div><div><span>Human authorization</span><strong>Required</strong></div><span className="stat-foot">Kite Passport</span></div>
           <div className="stat-card"><div className="stat-icon green"><ReceiptText size={19}/></div><div><span>Funds controlled by app</span><strong>$0.00</strong></div><span className="stat-foot">No custody</span></div>
         </div>
@@ -193,7 +193,7 @@ export default function Page() {
               </div>
               <div className="form-divider"/>
               <label className="field"><span>Task objective <b>*</b></span><textarea rows={3} value={proposal.task} maxLength={700} onChange={e=>update('task',e.target.value)} placeholder="What is the agent trying to accomplish?"/></label>
-              <div className="field-row"><label className="field"><span>Provider name</span><input value={proposal.provider} maxLength={120} onChange={e=>update('provider',e.target.value)} placeholder="Provider"/></label><label className="field"><span>Request method</span><select value={proposal.method} onChange={e=>update('method',e.target.value as Proposal['method'])}><option>GET</option><option>POST</option></select></label></div>
+              <div className="field-row"><label className="field"><span>Provider name</span><input value={proposal.provider} maxLength={120} onChange={e=>update('provider',e.target.value)} placeholder="Provider"/></label><label className="field"><span>Request method</span><select value={proposal.method} onChange={e=>update('method',e.target.value as Proposal['method'])}><option>GET</option></select></label></div>
               <label className="field"><span>Paid API endpoint</span><input type="url" value={proposal.endpoint} maxLength={1000} onChange={e=>update('endpoint',e.target.value)} placeholder="https://..."/></label>
               <label className="field"><span>Supporting evidence URL</span><input type="url" value={proposal.evidenceUrl} maxLength={1000} onChange={e=>update('evidenceUrl',e.target.value)} placeholder="Link to pricing or merchant documentation"/></label>
               <div className="amount-fields">
@@ -243,11 +243,11 @@ export default function Page() {
         </>}
 
         {area==='passport' && <>
-          <div className="section-head"><div><div className="section-kicker">HUMAN-IN-THE-LOOP</div><h2>Kite Passport handoff</h2><p>Use a scoped session to pay externally only after reviewing the real provider.</p></div><span className="section-step">03 / 03 · Authorize</span></div>
-          <div className="handoff-banner"><div className="handoff-badge"><Fingerprint size={24}/></div><div><h3>The browser cannot spend your money.</h3><p>Kite currently exposes the approved flow through its CLI and agent skills. No public HTTP API is documented, so SpendProof generates commands instead of pretending to complete an x402 purchase. <a href="https://docs.gokite.ai/api-reference" target="_blank" rel="noreferrer">View the official API status <ExternalLink size={13}/></a></p></div></div>
+          <div className="section-head"><div><div className="section-kicker">HUMAN-IN-THE-LOOP</div><h2>Kite Passport handoff</h2><p>Inspect the real provider, obtain SERV assessment and explicitly approve a bounded Kite spending session.</p></div><span className="section-step">03 / 03 · Authorize</span></div>
+          <div className="handoff-banner"><div className="handoff-badge"><Fingerprint size={24}/></div><div><h3>No payment is initiated by this browser.</h3><p>Kite currently exposes the approved flow through its CLI and agent skills. No public HTTP API is documented, so SpendProof generates commands instead of pretending to complete an x402 purchase. <a href="https://docs.gokite.ai/api-reference" target="_blank" rel="noreferrer">View the official API status <ExternalLink size={13}/></a></p></div></div>
           <section className="panel handoff-panel">
             <div className="panel-header"><div className="panel-title"><span className="panel-icon"><Code2 size={19}/></span><div><h3>Verified workflow, not automatic payment</h3><p>Copy the commands into your authenticated Kite-enabled terminal.</p></div></div><span className="panel-label">EXTERNAL CLI</span></div>
-            {!canHandoff && <div className="blocked-alert"><ShieldAlert size={17}/> This proposal fails local policy. The handoff commands are locked until the inputs pass.</div>}
+            {!canHandoff && <div className="blocked-alert"><ShieldAlert size={17}/> Handoff requires passing local policy, a live SERV assessment without a deny/high-risk outcome, and a GET-only provider request. You must still verify the discovered service and approve Kite separately.</div>}
             <div className="command-list">{commands.map((c,i)=><div className="command-block" key={c.id}><div className="command-title"><span className="command-index">{i+1}</span><div><strong>{c.title}</strong><p>{c.description}</p></div><span className="command-state">{i===0?'DISCOVER':i===1?'AUTHORIZE':'PAY'}</span></div><div className={'terminal '+(!canHandoff?'disabled':'')}><code>{canHandoff?c.command:'Complete the safety checks to unlock this command.'}</code><button disabled={!canHandoff} title={'Copy '+c.title} onClick={()=>copy(c.command,c.id)}>{copied===c.id?<Check size={17}/>:<Copy size={17}/>}</button></div></div>)}</div>
             {notifications && <div className="alert-error" role="alert">{notifications}</div>}
             <div className="handoff-footer"><span><ShieldCheck size={18}/> The user approves any real spending in Kite Passport with a passkey.</span><a href="https://agentpassport.ai/dashboard" target="_blank" rel="noreferrer">Open Passport dashboard <ArrowUpRight size={16}/></a></div>
