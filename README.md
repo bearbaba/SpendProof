@@ -10,6 +10,7 @@ SpendProof evaluates whether an AI agent's proposed API purchase is within expli
 - Optional **real SERV Reasoning** call via server-only `SERV_REASONING_API_KEY` and `SERV_MODEL`.
 - User-controlled, clearly labeled test scenarios and JSON audit export.
 - Server-HMAC-signed V2 decision receipt that binds the complete proposal, policy decision and SERV explanation to a verifiable record (not a payment receipt).
+- Post-payment local reconciliation of user-entered session/service/price/activity evidence. Matching data remains **unverified**, not a cryptographic payment proof.
 - Kite Passport CLI handoff (discover, inspect exact service, compare price/endpoint, passkey-approved one-payment session, execute and inspect activity) — no server-side custody.
 - No payment is executed by this web UI. The external Kite CLI remains the only execution channel. Client-entered budgets are advisory until a human approves a scope-limited Kite session.
 
