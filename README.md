@@ -9,7 +9,7 @@ SpendProof evaluates whether an AI agent's proposed API purchase is within expli
 - Deterministic policy checks (budget, per-transaction ceiling, merchant URL, evidence requirements).
 - Optional **real SERV Reasoning** call via server-only `SERV_REASONING_API_KEY` and `SERV_MODEL`.
 - User-controlled, clearly labeled test scenarios and JSON audit export.
-- Server-HMAC-signed SERV decision receipt with public signature validation (not a payment receipt).
+- Server-HMAC-signed V2 decision receipt that binds the complete proposal, policy decision and SERV explanation to a verifiable record (not a payment receipt).
 - Kite Passport CLI handoff (discover, inspect exact service, compare price/endpoint, passkey-approved one-payment session, execute and inspect activity) — no server-side custody.
 - No payment is executed by this web UI. The external Kite CLI remains the only execution channel. Client-entered budgets are advisory until a human approves a scope-limited Kite session.
 
@@ -29,6 +29,14 @@ npm run typecheck
 npm run build
 ```
 
+To verify SERV Reasoning with **your own server-side credentials** (a real credit-bearing request), set the keys in `.env.local`, then run:
+
+```bash
+npm run smoke:serv
+```
+
+This command prints model, risk and token counts but never prints credentials. Do not commit `.env.local`.
+
 Read [Kite integration and pending acceptance](docs/KITE_INTEGRATION.md) before generating a spending session.
 
 ## Safety
@@ -42,7 +50,7 @@ Official references: https://www.openserv.ai/hackathon-2 · https://www.openserv
 - The local deterministic decision test suite can run without credentials using `npm test`.
 - Real SERV Reasoning requires valid credentials and available model credits; it has not been exercised without them.
 - Kite service discovery and passkey-approved x402 payment must be performed externally; there is no live Kite payment proof yet.
-- HMAC authenticates the server-issued decision and does **not** establish merchant identity, on-chain payment, or fulfillment.
+- HMAC authenticates the complete server-issued decision bundle and does **not** establish merchant identity, on-chain payment, or fulfillment.
 - Illustrative `example.org` providers are fixtures; do not send real payments to them.
 - POST paid requests remain blocked until their payload can be explicitly reviewed.
 
