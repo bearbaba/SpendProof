@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createHash, timingSafeEqual } from 'node:crypto';
 import { evaluate, validProposal, type ServAssessment } from '../../../lib/policy';
+import { proposalDigest, signDecision } from '../../../lib/attestation';
 
 export const runtime = 'nodejs';
 export const maxDuration = 25;
@@ -35,8 +36,9 @@ export async function POST(req: NextRequest) {
   const key = process.env.SERV_REASONING_API_KEY;
   const model = process.env.SERV_MODEL;
   const access = process.env.SPENDPROOF_ACCESS_CODE;
-  if (!key || !model || !access) {
-    return respond({ code: 'NOT_CONFIGURED', error: 'SERV integration is not configured. Set server API key, model, and access code.' }, 503);
+  const auditSecret = process.env.SPENDPROOF_AUDIT_SECRET;
+  if (!key || !model || !access || !auditSecret || auditSecret.length < 32) {
+    return respond({ code: 'NOT_CONFIGURED', error: 'SERV integration is not configured. Set server API key, model, access code and a 32+ character signing secret.' }, 503);
   }
   if (!secretMatches(req.headers.get('x-spendproof-access') || '', access)) {
     return respond({ code: 'UNAUTHORIZED', error: 'Invalid project access code.' }, 401);
@@ -89,8 +91,18 @@ export async function POST(req: NextRequest) {
     try { serv = parseAssessment(content); }
     catch { return respond({ code: 'SERV_FORMAT', error: 'SERV response was not valid structured JSON.', policy }, 502); }
 
+    const selectedModel = String(result.model || model).slice(0, 150);
+    const attestation = signDecision(auditSecret, {
+      requestDigest: proposalDigest(proposal),
+      policyVerdict: 'REVIEW',
+      risk: serv.risk,
+      recommendation: serv.recommendation,
+      model: selectedModel,
+      issuedAt: new Date().toISOString(),
+      paymentExecuted: false,
+    });
     return respond({
-      mode: 'serv-live', policy, serv, model: result.model || model,
+      mode: 'serv-live', policy, serv, model: selectedModel, attestation,
       usage: result.usage ? {
         promptTokens: result.usage.prompt_tokens,
         completionTokens: result.usage.completion_tokens,
