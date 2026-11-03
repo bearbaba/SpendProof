@@ -10,8 +10,8 @@ SpendProof evaluates whether an AI agent's proposed API purchase is within expli
 - Optional **real SERV Reasoning** call via server-only `SERV_REASONING_API_KEY` and `SERV_MODEL`.
 - User-controlled, clearly labeled test scenarios and JSON audit export.
 - Server-HMAC-signed SERV decision receipt with public signature validation (not a payment receipt).
-- Kite Passport CLI handoff (discover, request passkey-approved spending session, execute) — no server-side custody.
-- No payment is executed by this web UI. The separate Kite CLI remains the only execution channel. Client-entered budgets are advisory until a human approves a scope-limited Kite session.
+- Kite Passport CLI handoff (discover, inspect exact service, compare price/endpoint, passkey-approved one-payment session, execute and inspect activity) — no server-side custody.
+- No payment is executed by this web UI. The external Kite CLI remains the only execution channel. Client-entered budgets are advisory until a human approves a scope-limited Kite session.
 
 ## Setup
 
@@ -28,6 +28,8 @@ npm run test
 npm run typecheck
 npm run build
 ```
+
+Read [Kite integration and pending acceptance](docs/KITE_INTEGRATION.md) before generating a spending session.
 
 ## Safety
 
@@ -46,4 +48,4 @@ Official references: https://www.openserv.ai/hackathon-2 · https://www.openserv
 
 ## Deployment
 
-Deploy to a Node-capable environment and set the two environment variables on the server. Avoid spending credentials on the frontend. No deployment has been performed.
+Deploy to a Node-capable environment and set all four variables in .env.example on the server. Avoid spending credentials on the frontend. No deployment has been performed.
