@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createHash, timingSafeEqual } from 'node:crypto';
-import { evaluate, validProposal, type ServAssessment } from '../../../lib/policy';
-import { proposalDigest, signDecision } from '../../../lib/attestation';
+import { evaluate, validProposal } from '../../../lib/policy';
+import { parseServAssessment } from '../../../lib/serv';
+import { recordDigest, signDecision } from '../../../lib/attestation';
 
 export const runtime = 'nodejs';
 export const maxDuration = 25;
@@ -12,24 +13,6 @@ function secretMatches(value: string, expected: string) {
   const a = createHash('sha256').update(value).digest();
   const b = createHash('sha256').update(expected).digest();
   return timingSafeEqual(a, b);
-}
-
-function parseAssessment(raw: string): ServAssessment {
-  const text = raw.trim().replace(/^\x60{3}(?:json)?\s*/i, '').replace(/\s*\x60{3}$/, '');
-  const object = JSON.parse(text) as Record<string, unknown>;
-  if (typeof object.summary !== 'string' || !['low', 'medium', 'high'].includes(String(object.risk))) {
-    throw Error('Invalid SERV output');
-  }
-  const list = (value: unknown) => Array.isArray(value)
-    ? value.filter((v): v is string => typeof v === 'string').slice(0, 6).map(v => v.slice(0, 200))
-    : [];
-  return {
-    summary: object.summary.slice(0, 600),
-    risk: object.risk as ServAssessment['risk'],
-    concerns: list(object.concerns),
-    evidenceGaps: list(object.evidenceGaps),
-    recommendation: object.recommendation === 'DENY' ? 'DENY' : 'REVIEW',
-  };
 }
 
 export async function POST(req: NextRequest) {
@@ -87,13 +70,15 @@ export async function POST(req: NextRequest) {
     if (typeof content !== 'string') {
       return respond({ code: 'SERV_EMPTY', error: 'SERV returned no text content.', policy }, 502);
     }
-    let serv: ServAssessment;
-    try { serv = parseAssessment(content); }
+    let serv;
+    try { serv = parseServAssessment(content); }
     catch { return respond({ code: 'SERV_FORMAT', error: 'SERV response was not valid structured JSON.', policy }, 502); }
 
     const selectedModel = String(result.model || model).slice(0, 150);
     const attestation = signDecision(auditSecret, {
-      requestDigest: proposalDigest(proposal),
+      requestDigest: recordDigest(proposal),
+      policyDigest: recordDigest(policy),
+      assessmentDigest: recordDigest(serv),
       policyVerdict: 'REVIEW',
       risk: serv.risk,
       recommendation: serv.recommendation,
