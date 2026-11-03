@@ -34,3 +34,16 @@ test('malformed inputs fail schema guard',()=>{
  assert.equal(validProposal({...base,amountUsd:'1'}),false);
  assert.equal(validProposal({...base,task:'x'.repeat(701)}),false);
 });
+
+test('POST remains blocked until body and authorization are implemented', () => {
+ assert.equal(evaluate({...base,method:'POST'}).verdict,'BLOCK');
+});
+test('caps use integer cents at boundaries',()=>{
+ assert.equal(evaluate({...base,amountUsd:0.50,perTxUsd:0.50,remainingUsd:0.50}).verdict,'REVIEW');
+ assert.equal(evaluate({...base,amountUsd:0.51,perTxUsd:0.50,remainingUsd:0.75}).verdict,'BLOCK');
+ assert.equal(evaluate({...base,amountUsd:0.01,perTxUsd:0.01,remainingUsd:0.01,budgetUsd:0.01}).verdict,'REVIEW');
+});
+test('blank task and malformed public endpoint block',()=>{
+ assert.equal(evaluate({...base,task:'  '}).verdict,'BLOCK');
+ assert.equal(evaluate({...base,endpoint:'https://user:password@example.org/api'}).verdict,'BLOCK');
+});
