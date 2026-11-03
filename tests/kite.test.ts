@@ -27,9 +27,10 @@ test('discovery is always available but payment commands are blocked by default'
   const steps = buildKiteSteps(proposal, {...review,userConfirmed:false}, false);
   assert.ok(steps.find(s => s.id === 'discover')?.command);
   assert.ok(steps.find(s => s.id === 'inspect')?.command);
-  for (const id of ['session','approve','execute','activity']) {
+  for (const id of ['session','approve','activate','check_active','execute']) {
     assert.equal(steps.find(s => s.id === id)?.command, null, id);
   }
+  assert.ok(steps.find(s=>s.id==='activity')?.command, 'Read-only activity lookup stays available');
 });
 
 test('manual catalog review alone never authorizes payments without a live SERV assessment', () => {
