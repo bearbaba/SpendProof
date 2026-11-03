@@ -30,7 +30,7 @@ The 9.5/10 score is an internal goal, **not** a judge rating or a claim that an 
 
 ## Live SERV preparation
 
-Never place keys in GitHub, X posts, recorded videos or chat. Configure server-only variables in `.env.local`:
+Never place keys in GitHub, X posts, recorded videos or chat. Set `SPENDPROOF_ENABLE_LIVE_SERV=true` only after OpenServ provider-side credit limits are set. Process-local call limits alone are not a durable financial control. Configure server-only variables in `.env.local`:
 
 - `SERV_REASONING_API_KEY` — OpenServ SERV Reasoning key.
 - `SERV_MODEL` — account-supported model ID.
