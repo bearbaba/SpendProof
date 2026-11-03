@@ -1,4 +1,4 @@
-import { cents, evaluate, safeHttps, type Proposal } from './policy';
+import { cents, evaluate, safeHttps, type Proposal } from './policy.ts';
 
 export type CatalogReview = {
   serviceId: string;
