@@ -7,6 +7,16 @@ export type CatalogReview = {
   userConfirmed: boolean;
 };
 
+export type KiteSafety = {
+  allowanceReviewed: boolean;
+  activeSessionConfirmed: boolean;
+};
+
+export const defaultKiteSafety: KiteSafety = {
+  allowanceReviewed: false,
+  activeSessionConfirmed: false,
+};
+
 export type ReviewCheck = {
   id: string;
   label: string;
@@ -14,7 +24,7 @@ export type ReviewCheck = {
 };
 
 export type KiteStep = {
-  id: 'discover' | 'inspect' | 'session' | 'approve' | 'execute' | 'activity';
+  id: 'discover' | 'inspect' | 'session' | 'approve' | 'activate' | 'check_active' | 'execute' | 'activity';
   title: string;
   description: string;
   stage: 'DISCOVER' | 'REVIEW' | 'AUTHORIZE' | 'PAY' | 'TRACE';
@@ -63,10 +73,16 @@ export function evaluateCatalogReview(proposal: Proposal, review: CatalogReview)
   ];
 }
 
-export function buildKiteSteps(proposal: Proposal, review: CatalogReview, servApproved: boolean): KiteStep[] {
+export function buildKiteSteps(
+  proposal: Proposal,
+  review: CatalogReview,
+  servApproved: boolean,
+  safety: KiteSafety = defaultKiteSafety,
+): KiteStep[] {
   const checks = evaluateCatalogReview(proposal, review);
   const reviewed = checks.every(c => c.passed);
-  const safe = reviewed && servApproved;
+  const canCreateSession = reviewed && servApproved && safety.allowanceReviewed;
+  const canExecute = canCreateSession && safety.activeSessionConfirmed;
   const task = shellQuote(proposal.task.slice(0, 160));
   const amount = cents(proposal.amountUsd);
   const cost = amount === null ? null : (amount / 100).toFixed(2);
@@ -93,7 +109,7 @@ export function buildKiteSteps(proposal: Proposal, review: CatalogReview, servAp
       title: 'Request one-payment spending session',
       description: 'Cap both the per-payment and total session spend to exactly this one quoted price; expires in 15 minutes.',
       stage: 'AUTHORIZE',
-      command: safe && cost !== null
+      command: canCreateSession && cost !== null
         ? 'kpass agent:session create --task-summary ' + task +
           ' --max-amount-per-tx ' + cost + ' --max-total-amount ' + cost +
           ' --ttl 15m --assets USDC --payment-approach x402_http --output json'
@@ -104,16 +120,34 @@ export function buildKiteSteps(proposal: Proposal, review: CatalogReview, servAp
       title: 'Wait for passkey approval',
       description: 'Use the request ID returned by session creation, then review and approve the exact spending scope.',
       stage: 'AUTHORIZE',
-      command: safe
+      command: canCreateSession
         ? 'kpass agent:session status --request-id <REQUEST_ID> --wait --output json'
         : null,
     },
     {
+      id: 'activate',
+      title: 'Select the exact approved session',
+      description: 'After passkey approval, replace SESSION_ID with the identifier from Kite. Never copy a session secret here.',
+      stage: 'AUTHORIZE',
+      command: canCreateSession
+        ? 'kpass agent:session use --session-id <SESSION_ID> --output json'
+        : null,
+    },
+    {
+      id: 'check_active',
+      title: 'Verify session is active immediately before paying',
+      description: 'Confirm the selected session is active, unexpired, and has this exact scope. An expired session may fall back to a recurring allowance.',
+      stage: 'REVIEW',
+      command: canCreateSession
+        ? 'kpass agent:session list --status active --output json'
+        : null,
+    },
+    {
       id: 'execute',
-      title: 'Execute only the reviewed GET request',
-      description: 'Only after catalog inspection, live SERV review, session activation and passkey approval.',
+      title: 'Execute only with the confirmed active session',
+      description: 'CAUTION: Kite can fall back to a preapproved allowance if your session expires. Recheck status and allowance just before running this command.',
       stage: 'PAY',
-      command: safe
+      command: canExecute
         ? 'kpass agent:session execute --url ' + endpoint + ' --method GET --output json'
         : null,
     },
@@ -122,7 +156,7 @@ export function buildKiteSteps(proposal: Proposal, review: CatalogReview, servAp
       title: 'Inspect actual payment activity',
       description: 'A successful CLI response and Passport activity are needed; a SpendProof decision is not payment proof.',
       stage: 'TRACE',
-      command: safe ? 'kpass activity --limit 20 --output json' : null,
+      command: 'kpass activity --limit 20 --output json',
     },
   ];
 }
