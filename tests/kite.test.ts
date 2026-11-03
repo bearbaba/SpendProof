@@ -94,7 +94,7 @@ test('no allowance acknowledgement disables the priced session and execution by 
 
 test('reviewing allowance permits session request but not execution until active session checked',()=>{
  const steps=buildKiteSteps(proposal,review,true,{allowanceReviewed:true,activeSessionConfirmed:false});
- assert.match(steps.find(s=>s.id==='session')?.command||'',/--max-total-amount 0\\.25/);
+ assert.match(steps.find(s=>s.id==='session')?.command||'',/--max-total-amount 0[.]25/);
  assert.match(steps.find(s=>s.id==='activate')?.command||'',/agent:session use --session-id/);
  assert.match(steps.find(s=>s.id==='check_active')?.command||'',/agent:session list --status active/);
  assert.equal(steps.find(s=>s.id==='execute')?.command,null);
