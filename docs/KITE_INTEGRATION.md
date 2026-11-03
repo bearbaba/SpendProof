@@ -27,6 +27,12 @@ Current official documentation:
 - The sample `example.org` URLs are demonstration fixtures, not payable merchants.
 - Expired sessions, payment failures, and status mismatches must be handled in the Kite terminal. Retry only after the actual failure is understood.
 
+## Optional post-payment evidence comparison
+
+After running the CLI, the Kite handoff screen accepts a manually entered session ID, service ID, exact paid URL, USDC amount, activity reference and reported status. It compares these against the reviewed intent and catalog values, then returns **MATCHED_UNVERIFIED** or **MISMATCH**. This is strictly a local reconciliation of user-supplied claims; it never queries Kite, confirms a blockchain transaction, or changes `paymentExecuted: false`. The audit JSON exports it under `externalObservation` with `coveredByServerSignature: false`.
+
+Do not insert private keys, access tokens, passkeys, or session secrets. Check the actual transaction via Kite Passport before presenting it as executed.
+
 ## Next acceptance work
 
 - Configure real SERV credentials and validate actual inference success/failure output.
