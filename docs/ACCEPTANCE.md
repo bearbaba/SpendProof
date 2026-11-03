@@ -1,6 +1,6 @@
 # SpendProof — Acceptance gate (Kite track)
 
-Status: **In development. Not submission-ready.** The target is product-quality 9.5/10, not an achieved judge score.
+Status: **Hackathon form submitted. Product still in development and not end-to-end validated.** The target is product-quality 9.5/10, not an achieved judge score.
 
 ## Definition of done
 
@@ -11,11 +11,11 @@ Status: **In development. Not submission-ready.** The target is product-quality 
 | Input constraints (unsafe URLs, unsupported POST) | Implemented | Negative inputs do not trigger inference or handoff |
 | SERV Reasoning | API integration in source, unverified live | Real authorized inference, schema-validated decision, visible model and errors |
 | Signed decision receipt | 4 unit tests pass locally | Live signing and public signature verification in the deployed app |
-| Kite discovery | CLI handoff template in source | Verified catalog service ID and pricing, not hypothetical URL |
-| Kite spending session | CLI handoff template in source | Human passkey-approved session with scoped limits |
-| x402 payment | Not executed | Successful real/sandbox (as allowed by track) Kite payment and receipt, no placeholder |
+| Kite discovery | Manual catalog review, exact URL and price comparison, CLI handoff | Real catalog service ID and actual price independently inspected |
+| Kite spending session | Least-privilege one-payment CLI command, 15-minute TTL | Human passkey-approved session with bounded limits |
+| x402 payment | Not executed; no in-app payment API | Successful real/sandbox (as allowed by track) Kite payment and receipt, no placeholder |
 | Failure path | Implemented for policy failures | Live invalid-key, expired-session, insufficient-budget and provider-error acceptance |
-| Public demo and X post | Not available | Published public demo, concise walkthrough and tagged @openservai post |
+| Public demo and X post | Public demo not deployed; X post URL not in repository | Public demo, walkthrough and tagged @openservai post URL archived |
 
 ## Required reproducible demo
 
