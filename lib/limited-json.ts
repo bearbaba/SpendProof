@@ -1,5 +1,6 @@
 export class BoundedBodyError extends Error {
-  constructor(public readonly status:400|413, message:string) { super(message); }
+  readonly status:400|413;
+  constructor(status:400|413, message:string) { super(message); this.status=status; }
 }
 
 export async function readBoundedJson(request:Request, maxBytes=6_000):Promise<unknown> {
