@@ -22,7 +22,7 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Configure `SERV_REASONING_API_KEY`, an available `SERV_MODEL`, a private `SPENDPROOF_ACCESS_CODE`, and a random 32+ character `SPENDPROOF_AUDIT_SECRET` to enable the live analysis button. Without those variables, deterministic tests still work; the live endpoint refuses rather than faking AI output.
+Configure `SERV_REASONING_API_KEY`, an available `SERV_MODEL`, a private **16+ character** `SPENDPROOF_ACCESS_CODE`, a random 32+ character `SPENDPROOF_AUDIT_SECRET`, and explicitly set `SPENDPROOF_ENABLE_LIVE_SERV=true` to enable live analysis. The default is `false` to prevent unexpected credit use. Without those variables, deterministic tests still work; the live endpoint refuses rather than faking AI output.
 
 ```bash
 npm run test
@@ -39,6 +39,15 @@ npm run smoke:serv
 This command prints model, risk and token counts but never prints credentials. Do not commit `.env.local`.
 
 Read [Kite integration and pending acceptance](docs/KITE_INTEGRATION.md) before generating a spending session.
+
+## SERV credit protection
+
+- The browser can always run local policy checks, even if SERV is disabled.
+- Live paid inference defaults to **OFF**; set `SPENDPROOF_ENABLE_LIVE_SERV=true` on the server only after you configure an account spending limit.
+- The server rejects malformed/oversized JSON requests, enforces a **15-second cooldown**, allows only **one concurrent call**, and caps usage to **20 calls per 24h per running process**.
+- **Critical:** these are **process-local**, not durable rate limits across serverless instances, deployments, or restarts. Use an OpenServ provider-side spending/credit cap and preferably a durable shared rate limiter before public exposure.
+- `/api/status` reports policy mode and whether SERV was configured, without revealing secrets. It cannot prove that a live inference succeeded.
+- Never paste an API key or passkey into the project browser; the project access code is a separate credential, not the SERV API key.
 
 ## Safety
 
