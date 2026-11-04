@@ -2,6 +2,8 @@
 
 Updated 2026-11-04. This is the next acceptance step after the builder's real local SERV inference, signed V2 decision, and localhost Audit verification passed.
 
+**Operator acceptance update, November 4, 2026 05:31:15 UTC: PASS.** The builder's real Windows Git Bash output reported `READ_ONLY_PREFLIGHT_PASS` followed by `KITE_UNPAID_READINESS_PASS`; Kite catalog JSON contained expected service ID `2a41b31ec8665c50f49098a7`, domain, GET `/v1/geo` and 0.01 USDC price signals. Anonymous HTTP 402 x402-v2 challenge advertised Base `eip155:8453`, USDC `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913`, amount `10000` base units (0.01 USDC). The output explicitly reported `providerAuthenticated=false`, `walletBalanceVerified=false`, `allowanceReviewed=false`, `sessionApproved=false`, `paidRequestAttempted=false`, `paymentExecuted=false`, `readyForPayment=false`. This is **builder-supplied terminal evidence**, not an independent verified merchant identity or payment.
+
 ## Exactly one safe local command
 
 From Git Bash on your own Windows machine, after `git pull origin main`:
@@ -28,7 +30,7 @@ npm run accept:kite
 6. **Only after separate explicit approval** of the exact one-payment scope, request a session with `--max-amount-per-tx 0.01 --max-total-amount 0.01 --ttl 15m --assets USDC --payment-approach x402_http`; approve it with your own passkey, select it, recheck active status and allowance immediately before executing a paid GET. The actual CLI may impose additional minimums or fees: never increase limits or change networks without a new owner decision.
 7. Only when a human authorizes the actual charge, call the exact verified GET **once**; inspect Passport activity and independently verify any external transaction hash and paid service response. Do not count a copied `MATCHED_UNVERIFIED` reconciliation as settlement proof.
 
-**Current state:** live SERV/HMAC/browser verification are accepted via builder-operated local evidence. Kite session, passkey approval, actual IP402 paid response, settlement and final Hackathon submission **remain outstanding**. Production SERV is disabled, and this gate never turns it on.
+**Current state:** live SERV/HMAC/browser verification and **Kite read-only catalog+HTTP 402** are accepted via builder-operated local evidence. Wallet balance, allowance, active Kite session, passkey approval, actual IP402 paid response, settlement and final Hackathon submission **remain outstanding**. Production SERV is disabled, and this gate never turns it on.
 
 ## Official sources
 
