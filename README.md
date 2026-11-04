@@ -9,7 +9,7 @@ SpendProof evaluates whether an AI agent's proposed API purchase is within expli
 - Deterministic policy checks (budget, per-transaction ceiling, merchant URL, evidence requirements).
 - Optional **real SERV Reasoning** call via server-only `SERV_REASONING_API_KEY` and `SERV_MODEL`.
 - User-controlled, clearly labeled test scenarios and JSON audit export.
-- Server-HMAC-signed V2 decision receipt that binds the complete proposal, policy decision and SERV explanation to a verifiable record (not a payment receipt).
+- Server-HMAC-signed V2 decision receipt binds the complete proposal, policy decision and SERV explanation. **The user must verify the signature, and that review must be under 10 minutes old, before a Kite handoff unlocks.** This is not a payment receipt.
 - Post-payment local reconciliation of user-entered session/service/price/activity evidence. Matching data remains **unverified**, not a cryptographic payment proof.
 - Kite Passport CLI handoff (discover, inspect the exact service, compare price/endpoint, review allowance fallback, passkey-approve and select a one-payment session, check active session, execute and inspect activity) — no server-side custody.
 - No payment is executed by this web UI. The external Kite CLI remains the only execution channel. Client-entered budgets are advisory until a human approves a scope-limited Kite session.
@@ -48,6 +48,10 @@ Read [Kite integration and pending acceptance](docs/KITE_INTEGRATION.md) before 
 - **Critical:** these are **process-local**, not durable rate limits across serverless instances, deployments, or restarts. Use an OpenServ provider-side spending/credit cap and preferably a durable shared rate limiter before public exposure.
 - `/api/status` reports policy mode and whether SERV was configured, without revealing secrets. It cannot prove that a live inference succeeded.
 - Never paste an API key or passkey into the project browser; the project access code is a separate credential, not the SERV API key.
+
+## Developer acceptance: mocked SERV upstream
+
+The normal `npm test` suite covers success and fail-closed SERV calls using a **mock upstream** (no credits, no real access). Tests cover malformed JSON, truncated results, upstream errors, DENY, network loss, signature binding and reuse of expired decisions. The real `npm run smoke:serv` remains a separate opt-in credit-bearing test.
 
 ## Safety
 
