@@ -57,7 +57,7 @@ export function parseServAssessment(raw: string): ServAssessment {
   }
 
   return {
-    summary: x.summary.trim().slice(0, 600),
+    summary: (x.summary as string).trim().slice(0, 600),
     risk: x.risk as ServAssessment['risk'],
     recommendation: x.recommendation as ServAssessment['recommendation'],
     concerns: (x.concerns as string[]).map(v => v.slice(0, 200)),
