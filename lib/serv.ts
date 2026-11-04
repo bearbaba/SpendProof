@@ -1,5 +1,7 @@
 import type { ServAssessment } from './policy.ts';
 
+export const SERV_RESPONSE_FORMAT = { type: 'json_object' } as const;
+
 const risks = ['low', 'medium', 'high'] as const;
 const recommendations = ['REVIEW', 'DENY'] as const;
 
