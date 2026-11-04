@@ -216,6 +216,12 @@ export default function Page() {
     }
   }
 
+  function openWorkspace() {
+    setArea('workspace');
+    window.requestAnimationFrame(()=>{
+      document.getElementById('decision-workspace')?.scrollIntoView({behavior:'smooth',block:'start'});
+    });
+  }
   async function copy(value:string,id:string) {
     try{await navigator.clipboard.writeText(value);setCopied(id);}
     catch{setNotifications('Clipboard was blocked. Select the command and copy it manually.');}
@@ -262,7 +268,7 @@ export default function Page() {
             <div className="eyebrow"><span className="eyebrow-line"/> AGENT SPENDING, UNDER CONTROL</div>
             <h1>Every payment deserves<br/><em>a reason.</em></h1>
             <p>Review what your agent wants to buy, enforce strict spending limits, and create a clear audit trail <strong>before money moves.</strong></p>
-            <button className="hero-cta" onClick={()=>setArea('workspace')}>Review a payment <ArrowRight size={18}/></button>
+            <button className="hero-cta" onClick={openWorkspace}>Try the demo <ArrowRight size={18}/></button>
           </div>
           <div className="hero-visual" aria-hidden="true">
             <div className="trace-top"><div className="trace-icon"><ShieldCheck size={22}/></div><div><span>SPENDING DECISION</span><strong>Review required</strong></div><span className="trace-circle">•••</span></div>
@@ -271,6 +277,10 @@ export default function Page() {
           </div>
         </section>
 
+        <div className="demo-intro" role="note">
+          <div><span className="demo-intro-icon"><FlaskConical size={19}/></span><div><strong>Explore SpendProof without a wallet or API key</strong><p>Choose a sample request, run local guardrails, inspect the audit, then explore the separate Kite handoff. Illustrative providers are not payable merchants.</p></div></div>
+          <span className="demo-intro-badge">SAFE DEMO</span>
+        </div>
         <div className="stat-grid">
           <div className="stat-card"><div className="stat-icon violet"><Shield size={19}/></div><div><span>Deterministic guardrails</span><strong>08 <small>checks</small></strong></div><span className="stat-foot">Always applied</span></div>
           <div className="stat-card"><div className="stat-icon blue"><Fingerprint size={19}/></div><div><span>Human authorization</span><strong>Required</strong></div><span className="stat-foot">Kite Passport</span></div>
@@ -278,7 +288,7 @@ export default function Page() {
         </div>
 
         {area==='workspace' && <>
-          <div className="section-head"><div><div className="section-kicker">DECISION LAB</div><h2>Review an agent purchase</h2><p>Run reproducible checks against an explicit payment proposal.</p></div><span className="section-step">01 / 03 · Validate</span></div>
+          <div className="section-head" id="decision-workspace"><div><div className="section-kicker">DECISION LAB</div><h2>Review an agent purchase</h2><p>Run reproducible checks against an explicit payment proposal.</p></div><span className="section-step">01 / 03 · Validate</span></div>
           <div className="workspace-grid">
             <section className="panel input-panel">
               <div className="panel-header"><div className="panel-title"><span className="panel-icon"><ClipboardCheck size={19}/></span><div><h3>Payment request</h3><p>Define the task, supplier and spending limits.</p></div></div><span className="panel-label">INPUT</span></div>
@@ -297,9 +307,11 @@ export default function Page() {
               <label className="check-field"><input type="checkbox" checked={proposal.supportsX402} onChange={e=>update('supportsX402',e.target.checked)}/><span><strong>Provider claims x402 compatibility</strong><small>Check this only if you have a provider claim; it is not independent verification.</small></span></label>
               <div className="form-actions">
                 <button className="btn-outline" onClick={localCheck}><Play size={16}/> Check locally</button>
-                <button className="btn-dark" onClick={liveAnalysis} disabled={busy}>{busy?<LoaderCircle size={16} className="spinning"/>:<Sparkles size={16}/>} {busy?'Analyzing…':'Analyze with SERV'} <ArrowRight size={16}/></button>
+                <button className="btn-dark" onClick={liveAnalysis} disabled={busy || servMode!=='live-enabled-unverified'} title={servMode!=='live-enabled-unverified'?'Live SERV is not configured on this deployment. Local demo checks are available.':'Runs one potentially paid SERV inference call'}>{busy?<LoaderCircle size={16} className="spinning"/>:<Sparkles size={16}/>} {busy?'Analyzing…':'Analyze with SERV'} <ArrowRight size={16}/></button>
               </div>
-              <div className="access-field"><LockKeyhole size={15}/><input type="password" value={access} onChange={e=>setAccess(e.target.value)} autoComplete="off" placeholder="Project access code for live SERV" aria-label="SERV access code"/><span>SERVER AUTH</span></div>
+              {servMode==='live-enabled-unverified'
+                ? <div className="access-field"><LockKeyhole size={15}/><input type="password" value={access} onChange={e=>setAccess(e.target.value)} autoComplete="off" placeholder="Project access code for live SERV" aria-label="SERV access code"/><span>SERVER AUTH</span></div>
+                : <div className="demo-mode-hint"><Info size={16}/><span>Local demo only. Live SERV Reasoning is disabled on this server; no AI credits or payments will be used. The live integration is separately documented in the repository.</span></div>}
               {error && <div className="alert-error" role="alert"><XCircle size={17}/>{error}</div>}
             </section>
 
