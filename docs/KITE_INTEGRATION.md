@@ -19,6 +19,33 @@ Current official documentation:
 7. The user executes the command in their trusted terminal, opens the approval link, and confirms with a passkey. SpendProof **never receives an authentication token or session secret**.
 8. After a successful transaction, check the returned CLI data and `kpass activity --limit 20 --output json` and inspect Passport activity; don't present payment as verified before that.
 
+## Windows installation when preflight reports missing CLI
+
+If `npm run preflight:kite` prints `kpassInstalled: false` and `ksearchInstalled: false`, then the application installed correctly but the local machine does not have Kite's **native command-line executables visible on PATH**. A standard `npm install` installs SpendProof dependencies, **not** the external Kite Passport.
+
+For Windows 10/11, use **Windows PowerShell** and the official Windows installer:
+
+```powershell
+Invoke-WebRequest https://cli.gokite.ai/install.ps1 -OutFile "$env:TEMP\\kite-install.ps1"
+notepad "$env:TEMP\\kite-install.ps1"
+# Only after reviewing the downloaded script from the official Kite site:
+& "$env:TEMP\\kite-install.ps1"
+```
+
+Open a **new PowerShell window** after installation, then run:
+
+```powershell
+kpass --version
+ksearch --version
+kpass health --output json
+```
+
+If those commands work, reopen Git Bash in the SpendProof folder, run `git pull origin main` and `npm run preflight:kite`. A CLI that works in PowerShell but not Git Bash usually indicates a Windows/Git Bash PATH mismatch; check the installed executable directory and reopen Git Bash. Do not copy private login/session files between environments.
+
+This preflight uses direct executable invocation, not `shell:true`, so it cannot accidentally interpret a username, path or CLI flag as shell syntax. The installed commands are still external programs and should be obtained only from official Kite sources.
+
+Read [Kite's current installation instructions](https://docs.gokite.ai/passport/install). No credentials, passkey, balance or paid request is required for this preflight.
+
 ## Check the installed Kite CLI dialect
 
 Kite's current [CLI reference](https://docs.gokite.ai/reference/kpass-cli) describes `kpass agent:session ...` and `ksearch services ...`, while the [Payments walkthrough](https://docs.gokite.ai/passport/payments) uses `kpass session ...` and `ksearch service ...`. SpendProof generates the **CLI reference form**, but there is no claim that it has been executed against your specific local CLI version.
