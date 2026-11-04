@@ -107,12 +107,12 @@ export function buildKiteSteps(
     {
       id: 'session',
       title: 'Request one-payment spending session',
-      description: 'Cap both the per-payment and total session spend to exactly this one quoted price; expires in 15 minutes.',
+      description: 'Request limits at the quoted price with a 15-minute TTL. Kite sessions are protocol-agnostic; verify the approved USD limits and actual expiry. Task text does not pin the API URL.',
       stage: 'AUTHORIZE',
       command: canCreateSession && cost !== null
         ? 'kpass agent:session create --task-summary ' + task +
           ' --max-amount-per-tx ' + cost + ' --max-total-amount ' + cost +
-          ' --ttl 15m --assets USDC --payment-approach x402_http --output json'
+          ' --ttl 15m --assets USDC --output json'
         : null,
     },
     {
@@ -136,7 +136,7 @@ export function buildKiteSteps(
     {
       id: 'check_active',
       title: 'Verify session is active immediately before paying',
-      description: 'Confirm the selected session is active, unexpired, and has this exact scope. An expired session may fall back to a recurring allowance.',
+      description: 'Confirm the current session is active, unexpired, and has the same spending limits. Inspect its actual USD-denominated delegation; it may be protocol-agnostic and not URL-bound. An expired session may fall back to an allowance.',
       stage: 'REVIEW',
       command: canCreateSession
         ? 'kpass agent:session list --status active --output json'
@@ -145,7 +145,7 @@ export function buildKiteSteps(
     {
       id: 'execute',
       title: 'Execute only with the confirmed active session',
-      description: 'CAUTION: Kite can fall back to a preapproved allowance if your session expires. Recheck status and allowance just before running this command.',
+      description: 'PAID CALL. Recheck the fresh x402 quote, owner-approved signed SERV review, active session ID/expiry, and allowance. Kite may fall back to an allowance if the session expired. Run only once with explicit owner authorization.',
       stage: 'PAY',
       command: canExecute
         ? 'kpass agent:session execute --url ' + endpoint + ' --method GET --output json'
