@@ -11,7 +11,7 @@ AI agents should not spend money based on an unverified URL or a budget they dec
 
 **What is working in code:** eight client-side policy checks; a server-owned decision signing ceiling; an optional protected SERV inference route; HMAC-signed audit decisions; a fail-closed manual Kite CLI handoff; JSON audit export; and manual post-payment reconciliation labeled unverified.
 
-**What is NOT yet accepted:** live SERV call with user credentials and real model credits, authenticated Kite CLI with passkey, x402 payment proof, and independently verified settlement.
+**What is accepted (builder-reported terminal evidence):** live SERV risk inference and a separate real OpenServ call signed and verified as a SpendProof V2 HMAC decision on 2026-11-04. **Not yet accepted:** the complete live browser/API roundtrip, Kite passkey-approved spending session, x402 payment, independently verified settlement, and final Hackathon submission.
 
 ## 90-second judge walkthrough (no credentials needed)
 
@@ -34,7 +34,7 @@ SpendProof — evidence before AI agent payments. 🛡️
 Built for @openservai Hackathon 02 × @GoKiteAI.
 
 ✅ Deterministic spend limits
-✅ SERV risk-review integration (live test pending)
+✅ Live SERV risk-review and locally signed decision (2026-11-04 operator evidence)
 ✅ Tamper-evident decision receipts
 ✅ Human-approved Kite Passport handoff
 
@@ -54,8 +54,8 @@ Demo: [INSERT VERIFIED PUBLIC DEMO URL]
 | Eight deterministic checks | Source, tests, browser fixtures | Implemented and automatically tested |
 | Owner-controlled signed-review ceiling | Source + unit tests | Implemented; not a Kite on-chain cap |
 | Correct SERVER status and demo UI | HTTP production smoke, tests | Automated checks passed; public browser acceptance pending |
-| SERV API failure handling | Mock upstream tests | Tested with mocks; live provider unverified |
-| HMAC decision integrity | Unit and production HTTP smoke | Tested with fake test-only signing secret |
+| SERV API failure handling | Mock upstream tests + operator's SERV terminal outputs | Live valid JSON and signed V2 decision confirmed by builder; failure paths mocked |
+| HMAC decision integrity | Unit + production HTTP smoke and operator's real local acceptance | Builder-reported real signed V2 PASS: HMAC valid and tamper rejected; browser HTTP roundtrip pending |
 | Kite CLI generated commands | Source and read-only dialect preflight | Windows kpass 1.8.0 + ksearch 1.0.6 real CLI preflight PASS; no paid session |
 | Real Kite x402 payment | Session, activity, independently checked transaction | NOT PERFORMED |
 | Public demo | Deployed URL + real production HTTP smoke | HTTP 200 and 6 safe live checks PASS; interactive desktop/mobile walkthrough pending |
@@ -71,7 +71,7 @@ User-initiated Kite discovery and direct merchant HTTP 402 validated a GET-only 
 2. Run: npm run smoke:serv — this makes a **real potentially billable** API call. Save only redacted evidence.
 3. Run: npm run preflight:kite — read-only version/help checks. Confirm actual CLI syntax on the operator's machine.
 4. Discover a real paid service in the Kite catalog and inspect its price, URL, currency and payment method.
-5. In a controlled test, run a live SERV analysis of the **same** purchase intent; verify the signed V2 decision in the UI.
+5. Local signed SERV acceptance is already builder-reported PASS. Next, follow [LOCAL_WEB_ACCEPTANCE.md](LOCAL_WEB_ACCEPTANCE.md) for a separate opt-in paid browser `/api/analyze` → `/api/verify` acceptance, using only localhost and the same IP402 purchase intent.
 6. Inspect/restrict any recurring allowance, create a single-price session, approve by passkey and verify it is currently active.
 7. Execute exactly one authorized x402 API request. Verify service response, Passport activity, amount and transaction on an independent source.
 8. Save a redacted receipt, upload any screenshots to the actual submission system, and update this evidence table from NOT PERFORMED to verified with actual URLs/IDs.
