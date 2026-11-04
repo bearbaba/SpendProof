@@ -1,6 +1,6 @@
-# IP402 x402 acceptance — unpaid provider challenge
+# IP402 x402 acceptance — discovery followed by real paid CLI milestone
 
-Status recorded: **2026-11-04**. User-operated Windows Kite Passport CLI and an anonymous Git Bash curl.exe call. No keys or funds disclosed. This is a reproducible **discovery + HTTP 402** milestone, **not** paid acceptance.
+Status recorded: **2026-11-04**. This document preserves the earlier **read-only discovery + HTTP 402** milestone. Later the user executed one real Kite CLI payment and supplied matching Kite Activity and BaseScan Success/USDC Transfer evidence; see [KITE_PAID_ACCEPTANCE.md](KITE_PAID_ACCEPTANCE.md). The `accept:kite` script itself remains unpaid.
 
 ## Evidence already observed
 
@@ -11,7 +11,7 @@ Status recorded: **2026-11-04**. User-operated Windows Kite Passport CLI and an 
 - Anonymous request GET https://ip402.xyz/v1/geo returned **HTTP/1.1 402 Payment Required**, Date **2026-11-04 03:43:01 UTC**. The Payment-Required header advertised x402 version 2, Base Mainnet (eip155:8453), exact payment, USDC asset **0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913**, amount **10000** base units = **0.01 USDC**. Alternative networks and a separate MPP option were also present.
 - Merchant response documents a required IP input (public example 8.8.8.8), optional lang, and protocol/network selection. Do NOT use bundle or MPP for one-payment acceptance.
 - Merchant notes Arc payment uses Circle Gateway balance, not plain wallet USDC. Use the Base accept as the intended network.
-- Challenge is time-bounded; it is not a frozen quote. **Live SERV analysis, signed HMAC and browser verification did pass on 2026-11-04 using the real IP402 candidate (operator's local evidence). No Kite passkey session, user payment, receipt or confirmed settlement has occurred.**
+- Challenge is time-bounded; it is not a frozen quote. **Live SERV analysis, signed HMAC and browser verification did pass on 2026-11-04 using the real IP402 candidate (operator's local evidence). That statement described the earlier unpaid phase, before the later real Kite execution documented separately.**
 
 ## Reproducible read-only quote check
 
@@ -36,7 +36,7 @@ A 402 response is **not** an IP lookup result and **not** payment proof. Do not 
 
 `npm run preflight:kite` reported `READ_ONLY_PREFLIGHT_PASS`. `npm run accept:kite` reported `KITE_UNPAID_READINESS_PASS`, with matching fixed catalog service ID, endpoint GET, 0.01 USDC price, Base `eip155:8453` and x402-v2 HTTP 402 challenge for 10000 USDC base units. No allowance or wallet verification, spending session, passkey approval, purchase or settlement; `readyForPayment=false`. This operator terminal result confirms an unpaid snapshot only. The quote remains time-sensitive.
 
-## Remaining real-money gates
+## Historically required real-money gates (now exercised once via external Kite CLI)
 
 - Enable SERV only in a protected environment with a confirmed provider-side credit budget and a durable shared throttle; public deployment stays disabled.
 - Operator's real SERV review and signature verification passed. **The signed review is valid for handoff only for 10 minutes**, so obtain a fresh SERV-signed decision when actually ready to request a session; prior evidence is not reusable payment authorization. If declined, STOP.
@@ -47,3 +47,7 @@ A 402 response is **not** an IP lookup result and **not** payment proof. Do not 
 - Do not claim a payment before independent payment evidence exists. Manually copied fields are MATCHED_UNVERIFIED at best.
 
 This feature is a real catalog reference and an **unpaid quote inspection**, not an integrated payment gateway.
+
+## Later paid acceptance (same date)
+
+A separate user-operated, passkey-approved 0.01 USD dedicated Kite session was used for one 0.01 USDC Base x402 IP402 GET. Kite recorded HTTP 200, successful payment response, and matching completed activity with a 0.010000 USDC wallet debit. The operator also supplied a BaseScan page reporting Success at block 53494088 and official-USDC transfer of 0.01. This paid result **does not change** the purpose of the read-only `npm run accept:kite` gate, which must continue to report `paymentExecuted=false`. See [complete redacted payment evidence](KITE_PAID_ACCEPTANCE.md).

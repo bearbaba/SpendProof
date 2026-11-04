@@ -1,4 +1,4 @@
-# Kite Passport — read-only gate before any approved IP402 charge
+# Kite Passport — read-only quote gate (one paid acceptance recorded separately)
 
 Updated 2026-11-04. This is the next acceptance step after the builder's real local SERV inference, signed V2 decision, and localhost Audit verification passed.
 
@@ -38,3 +38,7 @@ npm run accept:kite
 - https://docs.gokite.ai/passport/payments
 - https://docs.gokite.ai/passport/payments/allowance
 - https://docs.gokite.ai/passport/payments/funding
+
+## Subsequent paid completion (2026-11-04)
+
+After this read-only inspection, the operator ran a fresh SERV-signed review, approved a new dedicated Kite session capped at 0.01 USD, and executed one external paid IP402 GET. Kite returned HTTP 200 and `completed` x402 activity with 0.01 USDC spent; the operator supplied matching BaseScan Success, block 53494088 and official Base USDC Transfer evidence. See [KITE_PAID_ACCEPTANCE.md](KITE_PAID_ACCEPTANCE.md). The read-only `npm run accept:kite` command does **not** send funds and its own `paymentExecuted=false` output remains correct.

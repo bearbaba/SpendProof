@@ -11,7 +11,7 @@ AI agents should not spend money based on an unverified URL or a budget they dec
 
 **What is working in code:** eight client-side policy checks; a server-owned decision signing ceiling; an optional protected SERV inference route; HMAC-signed audit decisions; a fail-closed manual Kite CLI handoff; JSON audit export; and manual post-payment reconciliation labeled unverified.
 
-**What is accepted (builder-reported terminal evidence):** live SERV risk inference and a separate real OpenServ call signed and verified as a SpendProof V2 HMAC decision on 2026-11-04. **Not yet accepted:** a real Kite x402 payment, independently verified settlement, and final Hackathon submission. A **dedicated Kite session was approved and active** in builder-provided 2026-11-04 terminal evidence with 0.01 USD per-call and total, expiry 07:25:24 UTC; sessions are protocol-agnostic, and session activity has spent 0. The local browser SERV + signature verification roundtrip also **passed via builder screenshots** on 2026-11-04.
+**What is accepted (builder-reported terminal evidence):** live SERV risk inference and a separate real OpenServ call signed and verified as a SpendProof V2 HMAC decision on 2026-11-04. **Later accepted with operator evidence:** one real external Kite x402 GET succeeded (HTTP 200, Kite completed activity and a 0.010000 USDC debit), and the operator supplied a BaseScan Success page showing the matching official USDC transfer at block 53494088. Independent reviewer retrieval of the raw RPC receipt and final Hackathon submission are still outstanding. A **dedicated Kite session was approved and active** in builder-provided 2026-11-04 terminal evidence with 0.01 USD per-call and total, expiry 07:25:24 UTC; sessions are protocol-agnostic, and session activity has spent 0. The local browser SERV + signature verification roundtrip also **passed via builder screenshots** on 2026-11-04.
 
 ## 90-second judge walkthrough (no credentials needed)
 
@@ -59,7 +59,7 @@ Demo: [INSERT VERIFIED PUBLIC DEMO URL]
 | Kite CLI generated commands | Source and read-only dialect preflight | Windows kpass 1.8.0 + ksearch 1.0.6 real CLI preflight PASS; no paid session |
 | Read-only Kite acceptance | Real Windows `npm run preflight:kite` + `npm run accept:kite` terminal output, 2026-11-04 | **Operator-reported PASS**, catalog and Base 0.01 USDC x402 HTTP 402 challenge matched. No verified wallet balance, allowance, session, payment or settlement |
 | Kite passkey-approved session | User screenshot and authenticated CLI `agent:session status` + active list | **Operator-reported PASS** for active dedicated 0.01 USD limits, expiry 2026-11-04 07:25:24 UTC; not URL-bound, 0 spent |
-| Real Kite x402 payment | Session, activity, independently checked transaction | NOT PERFORMED |
+| Real Kite x402 payment | Operator-provided CLI, completed Kite Activity, balance delta and BaseScan Success/USDC transfer | **OPERATOR EVIDENCE PASS**; raw receipt not directly fetched by reviewer |
 | Public demo | Deployed URL + real production HTTP smoke | HTTP 200 and 6 safe live checks PASS; interactive desktop/mobile walkthrough pending |
 | Official Hackathon 02 project submission | Actual final submission confirmation | NOT YET VERIFIED |
 
