@@ -1,5 +1,7 @@
-import { parseServAssessment } from '../lib/serv.ts';
+import { parseServAssessment, SERV_RESPONSE_FORMAT } from '../lib/serv.ts';
 
+// Exactly one potentially billable SERV call. Never retry automatically.
+// Never print credentials, upstream raw model output, or request headers.
 const apiKey=process.env.SERV_REASONING_API_KEY;
 const model=process.env.SERV_MODEL;
 if(!apiKey || !model){
@@ -14,34 +16,62 @@ if(!apiKey || !model){
       body:JSON.stringify({
         model,
         temperature:0.1,
-        max_tokens:400,
+        max_completion_tokens:1200,
+        response_format:SERV_RESPONSE_FORMAT,
         messages:[
-          {role:'system',content:'Return ONLY valid JSON with keys summary (string), risk (low|medium|high), concerns (array of strings), evidenceGaps (array of strings), recommendation (REVIEW|DENY). Never claim payment executed.'},
-          {role:'user',content:'An agent proposes paying $0.25 for a weather API with task budget $1, but the merchant price and x402 compatibility have not been independently verified. Review the risks.'},
+          {role:'system',content:'You are the SpendProof purchase-risk reviewer. Return ONLY one valid JSON object with exactly these fields: summary (string), risk (low|medium|high), concerns (array of strings), evidenceGaps (array of strings), recommendation (REVIEW|DENY). Do not approve payments or assert any merchant, price, x402 integration or payment is independently verified.'},
+          {role:'user',content:'Review an unpaid API purchase candidate: GET https://ip402.xyz/v1/geo?ip=8.8.8.8&payment_protocol=x402&payment_network=base. A read-only Kite catalog quote and an HTTP 402 challenge on 2026-11-04 indicated a price of 0.01 USDC on Base. These observations may be stale and the provider, endpoint, current cost, funds and payment success are not independently verified. Task budget 1.00 USD, transaction ceiling 0.01 USD. Give a short risk review in JSON.'},
         ],
       }),
       signal:AbortSignal.timeout(20000),
       cache:'no-store',
     });
     if(!response.ok){
-      console.error('SERV_UPSTREAM_ERROR:',response.status,'. Check model, API key and credits.');
+      console.error('SERV_UPSTREAM_ERROR:',JSON.stringify({httpStatus:response.status,reason:'Check model compatibility, API key, account credits or request format. No retry performed.'}));
       process.exitCode=1;
     }else{
       const result=await response.json();
-      const raw=result?.choices?.[0]?.message?.content;
-      if(typeof raw!=='string')throw Error('SERV response has no text content');
-      const parsed=parseServAssessment(raw);
-      console.log(JSON.stringify({
-        status:'SERV_LIVE_RESPONSE_VALID',
-        model:result.model||model,
-        latencyMs:Date.now()-started,
-        assessment:parsed,
-        tokens:result.usage?{prompt:result.usage.prompt_tokens,completion:result.usage.completion_tokens}:null,
+      const choice=result?.choices?.[0];
+      const raw=choice?.message?.content;
+      const finish=choice?.finish_reason;
+      // Only coarse diagnostics are printed: never print model text or secrets.
+      const context={
+        finishReason:typeof finish==='string'?finish:'unknown',
+        contentChars:typeof raw==='string'?raw.length:0,
+        completionTokens:Number.isInteger(result?.usage?.completion_tokens)?result.usage.completion_tokens:null,
         paymentExecuted:false,
-      },null,2));
+      };
+      if(finish!==null && finish!==undefined && finish!=='stop'){
+        console.error('SERV_OUTPUT_INCOMPLETE:',JSON.stringify({...context,reason:'Non-final completion; no decision accepted.'}));
+        process.exitCode=1;
+      }else if(typeof raw!=='string' || raw.trim().length===0){
+        console.error('SERV_OUTPUT_EMPTY:',JSON.stringify({...context,reason:'No review text returned.'}));
+        process.exitCode=1;
+      }else{
+        let parsed;
+        try { parsed=parseServAssessment(raw); }
+        catch(err){
+          console.error('SERV_OUTPUT_INVALID:',JSON.stringify({
+            ...context,
+            reason:err instanceof Error?err.message:'Invalid JSON decision.',
+          }));
+          process.exitCode=1;
+        }
+        if(parsed){
+          console.log(JSON.stringify({
+            status:'SERV_LIVE_RESPONSE_VALID',
+            model:result.model||model,
+            latencyMs:Date.now()-started,
+            assessment:parsed,
+            tokens:result.usage?{prompt:result.usage.prompt_tokens,completion:result.usage.completion_tokens}:null,
+            paymentExecuted:false,
+          },null,2));
+        }
+      }
     }
   }catch(err){
-    console.error('SERV_SMOKE_FAILED:',err instanceof Error?err.message:'Unknown network or parsing error');
+    // Avoid raw response bodies and stack traces (may contain untrusted content).
+    console.error('SERV_SMOKE_FAILED:',err instanceof SyntaxError?'SERV returned invalid HTTP JSON':err instanceof Error?err.name:'Unknown network error');
     process.exitCode=1;
   }
 }
