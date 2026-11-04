@@ -62,6 +62,12 @@ All spending limits are enforced by deterministic code. AI analysis is advisory 
 
 Official references: https://www.openserv.ai/hackathon-2 · https://www.openserv.ai/ · https://docs.gokite.ai/passport/payments · https://docs.gokite.ai/api-reference
 
+### Important decision isolation rule
+
+A SERV assessment only applies to the exact task, provider, URL and monetary limits it reviewed. Editing any of these while the API is running cancels the browser request and discards late responses; a signed report for an older intent never unlocks a new Kite request. Cancellation does not guarantee the remote inference provider avoided a charge.
+
+Kite's official documentation currently uses different session command forms in the CLI reference and the Payments walkthrough. The generated commands follow [CLI reference](https://docs.gokite.ai/reference/kpass-cli); always inspect your installed `kpass` / `ksearch` version and `--help` before using them with real funds.
+
 ## Current verification and limits
 
 - The local deterministic decision test suite can run without credentials using `npm test`.
