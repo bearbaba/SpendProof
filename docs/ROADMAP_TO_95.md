@@ -1,6 +1,6 @@
 # SpendProof — release plan toward a 9.5/10 product-quality target
 
-Date: 2026-11-03. Track: OpenServ Hackathon 02 / Kite.
+Updated: 2026-11-04. Track: OpenServ Hackathon 02 / Kite.
 
 The 9.5/10 score is an internal goal, **not** a judge rating or a claim that an end-to-end payment has already succeeded.
 
@@ -12,7 +12,7 @@ The 9.5/10 score is an internal goal, **not** a judge rating or a claim that an 
 - Public verification route for full decision bundles, including tamper tests.
 - Kite CLI discovery, manual catalog cross-check, least-privilege single-payment spending session.
 - Kite post-payment observation reconciliation with explicit `MATCHED_UNVERIFIED` / `MISMATCH` outcomes.
-- CI has passed earlier iterations; check the latest GitHub Actions status for the current total.
+- CI has passed earlier iterations; the current release branch must pass all unit tests, typechecking, Next production build and seven HTTP smoke tests before merging.
 - No in-app payment, custody, or on-chain verification is falsely represented as completed.
 
 ## Remaining acceptance blockers
