@@ -45,6 +45,11 @@ test('session maximum is one quoted price, not unused budget or remaining alloca
   assert.match(command, /--max-amount-per-tx 0\.25\b/);
   assert.match(command, /--max-total-amount 0\.25\b/);
   assert.match(command, /--ttl 15m/);
+  assert.doesNotMatch(command,/--payment-approach/,'Deprecated option must not be generated for session creation');
+  assert.match(command,/--assets USDC/);
+  assert.ok(steps.find(x=>x.id==='session')?.description.includes('protocol-agnostic'));
+  assert.ok(steps.find(x=>x.id==='check_active')?.description.includes('USD-denominated'));
+
   assert.doesNotMatch(command, /--max-total-amount (8|4|5)\b/);
   assert.match(steps.find(s => s.id === 'execute')?.command || '', /--method GET/);
 });
