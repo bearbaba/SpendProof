@@ -1,3 +1,10 @@
+/** Resolve only the official native executable; never invoke a command shell. */
+export function kiteExecutableForPlatform(
+  command:'kpass'|'ksearch', platform:string,
+):string {
+  return platform==='win32'?command+'.exe':command;
+}
+
 export type CliProbeKey =
   'kpassVersion'|'ksearchVersion'|
   'kpassReference'|'kpassWalkthrough'|
