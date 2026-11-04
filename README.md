@@ -28,7 +28,10 @@ Configure `SERV_REASONING_API_KEY`, an available `SERV_MODEL`, a private **16+ c
 npm run test
 npm run typecheck
 npm run build
+npm run smoke:production
 ```
+
+The production smoke test starts the compiled Next.js application using **fake test-only server values**. It exercises public Home, capability status, disabled paid inference, complete V2 verification and tampering. It does not call SERV or Kite and is mandatory in CI.
 
 To verify SERV Reasoning with **your own server-side credentials** (a real credit-bearing request), set the keys in `.env.local`, then run:
 
