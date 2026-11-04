@@ -19,6 +19,12 @@ Current official documentation:
 7. The user executes the command in their trusted terminal, opens the approval link, and confirms with a passkey. SpendProof **never receives an authentication token or session secret**.
 8. After a successful transaction, check the returned CLI data and `kpass activity --limit 20 --output json` and inspect Passport activity; don't present payment as verified before that.
 
+## Check the installed Kite CLI dialect
+
+Kite's current [CLI reference](https://docs.gokite.ai/reference/kpass-cli) describes `kpass agent:session ...` and `ksearch services ...`, while the [Payments walkthrough](https://docs.gokite.ai/passport/payments) uses `kpass session ...` and `ksearch service ...`. SpendProof generates the **CLI reference form**, but there is no claim that it has been executed against your specific local CLI version.
+
+Before entering credentials or executing paid requests, check `kpass --version`, `ksearch --version` and the commands listed in the installed CLI's `--help`. If the installed version uses different verbs, prefer the syntax shown by that installation. Do not guess or bypass an unsupported flag. The generated shell arguments use POSIX quoting, suitable for Bash/Git Bash; users of other shells must inspect quoting before executing.
+
 ## Fail-closed conditions
 
 - A missing catalog service ID, URL mismatch, missing manual confirmation, or price mismatch blocks `session` and `execute` command creation.
