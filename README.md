@@ -43,6 +43,8 @@ This command prints model, risk and token counts but never prints credentials. D
 
 To inspect **your installed Kite CLI syntax** without logging in or making any payment, run `npm run preflight:kite`. This checks only CLI `--version` and `--help`; it reports candidate command dialects, not a verified live transaction. The local Kite CLI is not required in GitHub Actions.
 
+For the **no-wallet demo**, follow [Hackathon 02 release walkthrough and evidence checklist](docs/HACKATHON02_RELEASE.md). The public demo uses only local checks when SERV is disabled; there are no fake payment results.
+
 Read [Kite integration and pending acceptance](docs/KITE_INTEGRATION.md) before generating a spending session.
 
 ## Server-owned decision ceiling
