@@ -39,7 +39,23 @@ To verify SERV Reasoning with **your own server-side credentials** (a real credi
 npm run smoke:serv
 ```
 
-This command prints model, risk and token counts but never prints credentials. Do not commit `.env.local`.
+This command prints model, risk and token counts but never prints credentials. On November 4, 2026, the builder confirmed a live `SERV_LIVE_RESPONSE_VALID` result using `gemini-3.1-flash-lite` (590 prompt tokens, 132 completion tokens, medium risk / REVIEW); this proves **live inference**, not yet a live signed decision or payment. Do not commit `.env.local`.
+
+### Signed live SERV acceptance (separate, optional paid call)
+
+First run the free, offline configuration and policy check:
+
+```bash
+npm run accept:serv
+```
+
+If it prints `SERV_SIGNED_PREFLIGHT_PASS`, and **only if you approve one more potentially billable OpenServ inference**, run:
+
+```bash
+npm run accept:serv -- --live
+```
+
+The second command uses the app's production signing function on the **actual unpaid IP402 GET intent**, signs a V2 decision, verifies its HMAC and exact bundle, rejects a deliberately tampered intent, and writes a redacted local acceptance file under `out/` (git-ignored). It makes **exactly one** OpenServ request, with no automatic retry. The saved file contains the signed decision, not the API key, access code, HMAC secret, wallet secret or payment. A `REVIEW` result is not merchant verification or permission to pay; the 10-minute handoff freshness limit and all external Kite checks still apply. This local acceptance is distinct from an HTTP roundtrip through the Next.js `/api/analyze` and `/api/verify` routes; those routes have separate mock-backed CI HTTP tests.
 
 To inspect **your installed Kite CLI syntax** without logging in or making any payment, run `npm run preflight:kite`. This checks only CLI `--version` and `--help`; it reports candidate command dialects, not a verified live transaction. The local Kite CLI is not required in GitHub Actions.
 
@@ -93,7 +109,7 @@ Run `npm run smoke:live` from a machine with internet access to check the **publ
 ## Current verification and limits
 
 - The local deterministic decision test suite can run without credentials using `npm test`.
-- Real SERV Reasoning requires valid credentials and available model credits; it has not been exercised without them.
+- The builder confirmed one real SERV Reasoning smoke result on November 4, 2026; signed live decision acceptance and the HTTP/UI workflow remain pending.
 - Kite service discovery and passkey-approved x402 payment must be performed externally; there is no live Kite payment proof yet.
 - HMAC authenticates the complete server-issued decision bundle and does **not** establish merchant identity, on-chain payment, or fulfillment.
 - Illustrative `example.org` providers are fixtures; do not send real payments to them.
@@ -101,4 +117,4 @@ Run `npm run smoke:live` from a machine with internet access to check the **publ
 
 ## Deployment
 
-Deploy to a Node-capable environment and set all four variables in .env.example on the server. Avoid spending credentials on the frontend. No deployment has been performed.
+Public demo: https://spendproof.vercel.app/ (paid SERV remains disabled). Keep server-only credentials out of frontend code. Never expose local SERV acceptance credentials in Vercel without durable provider credit controls.
