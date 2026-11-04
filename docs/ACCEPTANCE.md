@@ -1,6 +1,6 @@
 # SpendProof — Acceptance gate (Kite track)
 
-Status: **An OpenServ Hackathon 02 registration/feedback form was acknowledged; an official completed-project submission has not been independently confirmed. Product is not yet end-to-end validated.** The target is product-quality 9.5/10, not an achieved judge score.
+Status (2026-11-04): **Real operator-executed Kite x402 IP402 GET on Base succeeded following a verified live SERV decision and passkey-approved one-payment session. Kite returned HTTP 200, `completed` activity, and a 0.01 USDC debit; a user-shared BaseScan record shows Success, block 53494088 and the matching official USDC token transfer.** The website itself does not execute payment. The official hackathon submission is not independently confirmed; 9.5/10 remains a quality target, not a judge score. See [paid acceptance evidence](KITE_PAID_ACCEPTANCE.md).
 
 ## Definition of done
 
@@ -12,9 +12,9 @@ Status: **An OpenServ Hackathon 02 registration/feedback form was acknowledged; 
 | SERV Reasoning | **Live model inference and localhost browser analysis PASS (operator evidence, 2026-11-04)**: `gemini-3.1-flash-lite`, medium / REVIEW, unpaid | Keep paid SERV disabled in public production; see [LOCAL_WEB_ACCEPTANCE.md](LOCAL_WEB_ACCEPTANCE.md) |
 | Signed decision receipt | **Local CLI HMAC/tamper acceptance PASS** (916 prompt / 140 completion tokens), **browser `/api/analyze` → `/api/verify` PASS** (operator screenshots, 2026-11-04). No transfer executed. | Continue with fresh merchant quote, scoped Kite session, and independent x402 receipt verification; a signed decision is not payment proof |
 | Kite discovery | User observed real IP402 service ID and GET endpoint, catalog listing of 0.01 USDC, and direct HTTP 402 x402 Base USDC challenge. Sample unpaid IP402 candidate added to UI. | Reinspect exact current URL, payment option, provider legitimacy and live costs immediately before any approved payment |
-| Kite spending session | **Operator-reported approved and ACTIVE** 2026-11-04: original `coding-assistant` agent; one dedicated session with `max_amount_per_tx=0.01`, `max_total_amount=0.01` **USD**, spent/reserved 0, expiry `2026-11-04T07:25:24.735376Z`. CLI v1.8 reports sessions are protocol-agnostic; task text does not lock the provider URL. | Check current validity before use; obtain new signed SERV review if expired, don't reuse an expired session |
+| Kite spending session | **PASS for one paid request**: second dedicated session approved via passkey, limits 0.01 USD per-call and total, expiry 2026-11-04T07:43:00.100242Z; subsequently spent 0.01. | Do not reuse the spent-cap session; session task is not a URL lock. Recurring allowance status was not captured |
 | User-supplied Kite evidence comparison | Implemented without external Kite verification | Independently check success and settlement before advertising payment proof |
-| x402 payment | **Not executed**; 2026-11-04 refreshed read-only Kite catalog and HTTP 402 quote PASS (0.01 USDC on Base). No in-app payment API | Explicit human authorization of one paid GET, evidence of actual service response and independently verified receipt; no placeholders |
+| x402 payment | **OPERATOR-OBSERVED PASS**: one external Kite x402 IP402 GET returned HTTP 200, `payment_response.success=true`, USDC session spent 10000 raw units, matching `completed` Kite Activity and 0.010000 USDC balance delta. User also supplied BaseScan Success block 53494088 and matching USDC transfer. | Public-explorer evidence is operator-shared, not a directly fetched JSON-RPC receipt; no payment execution in the web app |
 | Failure path | Mocked SERV error coverage and production HTTP smoke tests | Live invalid-key, expired-session, insufficient-budget and provider-error acceptance |
 | Public demo and X post | Production deployed at https://spendproof.vercel.app/; HTTP 200, live API safety checks PASS. X post still unverified. | Interactive desktop/mobile walkthrough and published tagged @openservai X post archived |
 
@@ -33,7 +33,7 @@ The CI suite validates one-call SERV execution and rejects malformed JSON, trunc
 
 `npm run build && npm run smoke:production` runs the built Next.js service with fake test values and tests HTTP response shapes and cryptographic verification. This stage is mandatory in CI and **does not spend credits or constitute proof of live Kite or SERV operation**.
 
-Read-only real provider evidence and its limits: docs/IP402_ACCEPTANCE.md (HTTP 402 is not a paid response or successful Kite transaction).
+Read-only real provider evidence: docs/IP402_ACCEPTANCE.md. Successful later external paid request and evidence boundary: docs/KITE_PAID_ACCEPTANCE.md.
 
 ## Required reproducible demo
 
