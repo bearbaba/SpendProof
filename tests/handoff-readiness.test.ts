@@ -55,8 +55,8 @@ test('DENY and high-risk verdicts never unlock payments even with verified signa
 
 test('local checks and missing records never authorize payment',()=>{
   assert.equal(getHandoffState(null,proposal,'verified',now),'MISSING_LIVE_REVIEW');
-  assert.equal(getHandoffState({...report(),mode:'local-policy'},proposal,proposal,'verified',now),'MISSING_LIVE_REVIEW');
-  assert.equal(getHandoffState({...report(),attestation:null},proposal,proposal,'verified',now),'MISSING_LIVE_REVIEW');
+  assert.equal(getHandoffState({...report(),mode:'local-policy'},proposal,'verified',now),'MISSING_LIVE_REVIEW');
+  assert.equal(getHandoffState({...report(),attestation:null},proposal,'verified',now),'MISSING_LIVE_REVIEW');
 });
 
 test('changed spending amount, caps, endpoint, purpose or method invalidate the prior SERV review',()=>{
