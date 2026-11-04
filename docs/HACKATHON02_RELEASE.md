@@ -73,6 +73,14 @@ Demo: [INSERT VERIFIED PUBLIC DEMO URL]
 8. Save a redacted receipt, upload any screenshots to the actual submission system, and update this evidence table from NOT PERFORMED to verified with actual URLs/IDs.
 9. Verify the **official Hackathon 02 project submission workflow** is completed. An OpenServ pre-registration/feedback Typeform receipt alone does not prove the finished project has been submitted.
 
+## Public demo deployment and verification
+
+- **Public demo:** https://spendproof.vercel.app/
+- **Environment:** isolated Vercel production project `spendproof`, SERV inference intentionally disabled, default server decision ceiling 1 USDC.
+- **Published:** 2026-11-04, commit `4a22833a7fe7a7407ee547a730e9b43d1cf03982`.
+- **Observed on production:** Home and `/api/status` HTTP 200; no grouped runtime errors were reported at inspection time. This proves basic availability only, not browser UX on every device.
+- **Reproducible live smoke:** `npm run smoke:live` checks the real public host, disabled paid inference, unconfigured audit signing and safe REST behaviour. This cannot substitute for live SERV or Kite evidence.
+
 ## No-fee public demo policy
 
 - Keep paid SERV inference disabled in the public demo unless a durable shared rate limiter and OpenServ credit cap are in place.
