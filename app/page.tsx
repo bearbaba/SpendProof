@@ -13,9 +13,10 @@ import { buildKiteSteps, evaluateCatalogReview, defaultKiteSafety, type CatalogR
 import type { DecisionRecord } from '../lib/attestation';
 import { getHandoffState } from '../lib/handoff-readiness';
 import { emptyObservation, reconcileObservation, type PaymentObservation } from '../lib/reconciliation';
+import { ip402Candidate, IP402_CATALOG_SERVICE_ID } from '../lib/ip402-candidate';
 
 type Area = 'workspace'|'audit'|'passport';
-type CaseId = 'within'|'over'|'missing';
+type CaseId = 'within'|'over'|'missing'|'ip402';
 type Report = {
   createdAt: string; mode: 'local-policy'|'serv-live'|'policy';
   proposal: Proposal; policy: Decision; serv: ServAssessment|null;
@@ -23,6 +24,10 @@ type Report = {
 };
 
 const cases: Record<CaseId, { label:string; sub:string; proposal:Proposal }> = {
+  ip402: {
+    label:'IP402 · GeoIP', sub:'Real x402 catalog candidate · unpaid',
+    proposal:ip402Candidate,
+  },
   within: {
     label:'Within budget', sub:'Requires manual verification',
     proposal:{
@@ -294,8 +299,17 @@ export default function Page() {
               <div className="panel-header"><div className="panel-title"><span className="panel-icon"><ClipboardCheck size={19}/></span><div><h3>Payment request</h3><p>Define the task, supplier and spending limits.</p></div></div><span className="panel-label">INPUT</span></div>
               <div className="preset-heading">TEST SCENARIOS <span>Illustrative fixtures, not live suppliers</span></div>
               <div className="preset-grid">
-                {(Object.entries(cases) as [CaseId,typeof cases[CaseId]][]).map(([id,entry])=><button key={id} className={'preset '+(caseId===id?'active':'')} onClick={()=>selectCase(id)}><span className="preset-top">{id==='within'?<CheckCircle2 size={16}/>:id==='over'?<ShieldAlert size={16}/>:<Info size={16}/>} {entry.label}</span><span>{entry.sub}</span></button>)}
+                {(Object.entries(cases) as [CaseId,typeof cases[CaseId]][]).filter(([id])=>id!=='ip402').map(([id,entry])=><button key={id} className={'preset '+(caseId===id?'active':'')} onClick={()=>selectCase(id)}><span className="preset-top">{id==='within'?<CheckCircle2 size={16}/>:id==='over'?<ShieldAlert size={16}/>:<Info size={16}/>} {entry.label}</span><span>{entry.sub}</span></button>)}
               </div>
+              <div className={'catalog-candidate'+(caseId==='ip402'?' active':'')}>
+                <div className="catalog-candidate-info">
+                  <span><Globe2 size={14}/> REAL X402 CATALOG · UNPAID</span>
+                  <strong>IP402 — GET /v1/geo</strong>
+                  <small>0.01 USDC listed · Base · service ID {IP402_CATALOG_SERVICE_ID}. A live 402 challenge was observed, but this is not a payment or a locked quote.</small>
+                </div>
+                <button className="btn-outline" onClick={()=>selectCase('ip402')}>Load candidate <ArrowRight size={15}/></button>
+              </div>
+              {caseId==='ip402' && <div className="demo-mode-hint" role="note"><Info size={16}/><span>This real service candidate uses public example IP 8.8.8.8. Run <code>npm run inspect:ip402</code> locally to recheck the current HTTP 402 quote. The catalog, exact URL, fees and Base network still require manual review. No payment or SERV inference is initiated by choosing this example.</span></div>}
               <div className="form-divider"/>
               <label className="field"><span>Task objective <b>*</b></span><textarea rows={3} value={proposal.task} maxLength={700} onChange={e=>update('task',e.target.value)} placeholder="What is the agent trying to accomplish?"/></label>
               <div className="field-row"><label className="field"><span>Provider name</span><input value={proposal.provider} maxLength={120} onChange={e=>update('provider',e.target.value)} placeholder="Provider"/></label><label className="field"><span>Request method</span><select value={proposal.method} onChange={e=>update('method',e.target.value as Proposal['method'])}><option>GET</option></select></label></div>
