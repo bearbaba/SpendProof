@@ -45,6 +45,12 @@ To inspect **your installed Kite CLI syntax** without logging in or making any p
 
 Read [Kite integration and pending acceptance](docs/KITE_INTEGRATION.md) before generating a spending session.
 
+## Server-owned decision ceiling
+
+The browser's budget, remaining amount, and per-transaction limit are **untrusted inputs**, not an authoritative payment policy. To prevent an AI agent from raising those numbers and obtaining a larger signed recommendation, the server adds its own `owner_ceiling` decision check. By default `SPENDPROOF_MAX_SIGNED_TX_USD` is **1.00 USDC per reviewed purchase** (adjustable by the server owner up to 100.00). Invalid configuration fails closed; requests above the ceiling are blocked **before** contacting SERV. The signed audit bundle includes the server-controlled check.
+
+This protects **what SpendProof signs**. It does **not** control or guarantee the actual external Kite payment. Only a passkey-approved session and Kite's own enforcement can do that. Never describe a manually entered browser budget as an on-chain cap.
+
 ## SERV credit protection
 
 - The browser can always run local policy checks, even if SERV is disabled.

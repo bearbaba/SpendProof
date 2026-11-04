@@ -52,7 +52,8 @@ export async function requestServAssessment(input:{
 }):Promise<ServFailure|ServSuccess> {
   const {proposal,policy,key,model,auditSecret}=input;
   // Defense in depth: never spend SERV credits for a blocked intent.
-  if(evaluate(proposal).verdict!=='REVIEW' || policy.verdict!=='REVIEW'){
+  if(evaluate(proposal).verdict!=='REVIEW' || policy.verdict!=='REVIEW' ||
+     !policy.checks.some(check=>check.id==='owner_ceiling' && check.passed)) {
     return {ok:false,status:502,code:'SERV_FORMAT',error:'The spending proposal must pass policy before SERV analysis.'};
   }
   try {
