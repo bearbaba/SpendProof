@@ -9,8 +9,8 @@ Status: **An OpenServ Hackathon 02 registration/feedback form was acknowledged; 
 | Clear purpose and intuitive flow | Implemented in source | Responsive browser acceptance on desktop and mobile |
 | Deterministic cost controls | Eight client policy checks plus a server-owned signed-purchase ceiling | Server rejects inflated client caps before using SERV credits; CI passes |
 | Input constraints (unsafe URLs, unsupported POST) | Implemented | Negative inputs do not trigger inference or handoff |
-| SERV Reasoning | API integration in source, unverified live | Real authorized inference, schema-validated decision, visible model and errors |
-| Signed decision receipt | Server-signed V2 full bundle; handoff requires explicit verification and a decision under 10 minutes old | Live signing and verification via deployed app |
+| SERV Reasoning | **Real model inference passed on 2026-11-04**, per builder's local terminal output: `gemini-3.1-flash-lite`, 590 input / 132 output tokens, medium / REVIEW, no payment | Separate live signed V2 acceptance and local API/UI walkthrough still required |
+| Signed decision receipt | Server-signed V2 full bundle tested with mocked CI data; optional opt-in local live signed acceptance script now exists | Execute one owner-approved paid `npm run accept:serv -- --live` and verify live signed V2 + tamper rejection; UI/HTTP verification remains separate |
 | Kite discovery | User observed real IP402 service ID and GET endpoint, catalog listing of 0.01 USDC, and direct HTTP 402 x402 Base USDC challenge. Sample unpaid IP402 candidate added to UI. | Reinspect exact current URL, payment option, provider legitimacy and live costs immediately before any approved payment |
 | Kite spending session | Least-privilege one-payment CLI command, 15-minute TTL | Human passkey-approved session with bounded limits |
 | User-supplied Kite evidence comparison | Implemented without external Kite verification | Independently check success and settlement before advertising payment proof |

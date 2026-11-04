@@ -9,6 +9,7 @@
     "typecheck": "tsc --noEmit",
     "test": "node --experimental-strip-types --test tests/*.test.ts",
     "smoke:serv": "node --experimental-strip-types --env-file=.env.local scripts/serv-smoke.mjs",
+    "accept:serv": "node --experimental-strip-types --env-file=.env.local scripts/accept-serv-signed.mjs",
     "smoke:production": "node scripts/smoke-production.mjs",
     "preflight:kite": "node --experimental-strip-types scripts/kite-preflight.mjs",
     "smoke:live": "node scripts/smoke-live-demo.mjs",
