@@ -1,5 +1,5 @@
 import { evaluate, type Decision, type Proposal } from './policy.ts';
-import { parseServAssessment } from './serv.ts';
+import { parseServAssessment, SERV_RESPONSE_FORMAT } from './serv.ts';
 import { recordDigest, signDecision } from './attestation.ts';
 
 export const SERV_ENDPOINT='https://inference-api.openserv.ai/v1/chat/completions';
@@ -61,7 +61,7 @@ export async function requestServAssessment(input:{
       method:'POST',
       headers:{Authorization:'Bearer '+key,'Content-Type':'application/json'},
       body:JSON.stringify({
-        model,temperature:0.1,max_tokens:650,
+        model,temperature:0.1,max_completion_tokens:1200,response_format:SERV_RESPONSE_FORMAT,
         messages:[
           {role:'system',content:instructions},
           {role:'user',content:JSON.stringify({proposal,deterministicChecks:policy.checks})},
