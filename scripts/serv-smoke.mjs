@@ -19,7 +19,7 @@ if(!apiKey || !model){
         max_completion_tokens:1200,
         response_format:SERV_RESPONSE_FORMAT,
         messages:[
-          {role:'system',content:'You are the SpendProof purchase-risk reviewer. Return ONLY one valid JSON object with exactly these fields: summary (string), risk (low|medium|high), concerns (array of strings), evidenceGaps (array of strings), recommendation (REVIEW|DENY). Do not approve payments or assert any merchant, price, x402 integration or payment is independently verified.'},
+          {role:'system',content:'You are the SpendProof purchase-risk reviewer. Return ONLY one JSON object strictly matching the supplied spendproof_risk_review_v1 JSON Schema. All five named fields are required. summary must be one useful sentence of 8 to 600 characters; risk must be exactly low, medium, or high; concerns and evidenceGaps must be arrays of up to eight short nonempty strings (use [] if empty); recommendation must be exactly REVIEW or DENY. Do not approve payments or claim merchant, cost, protocol support or settlement are independently verified.'},
           {role:'user',content:'Review an unpaid API purchase candidate: GET https://ip402.xyz/v1/geo?ip=8.8.8.8&payment_protocol=x402&payment_network=base. A read-only Kite catalog quote and an HTTP 402 challenge on 2026-11-04 indicated a price of 0.01 USDC on Base. These observations may be stale and the provider, endpoint, current cost, funds and payment success are not independently verified. Task budget 1.00 USD, transaction ceiling 0.01 USD. Give a short risk review in JSON.'},
         ],
       }),
