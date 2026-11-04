@@ -83,6 +83,8 @@ export default function Page() {
   const [notifications,setNotifications] = useState('');
   const [verification,setVerification] = useState<'idle'|'checking'|'verified'|'invalid'>('idle');
   const verificationNonce = useRef(0);
+  const analysisNonce = useRef(0);
+  const analysisAbort = useRef<AbortController|null>(null);
   const [clockMs,setClockMs] = useState(()=>Date.now());
   useEffect(()=>{
     const id=window.setInterval(()=>setClockMs(Date.now()),15_000);
@@ -105,7 +107,7 @@ export default function Page() {
 
   const policy = useMemo(()=>evaluate(proposal),[proposal]);
   const passed = policy.checks.filter(c=>c.passed).length;
-  const handoffState = getHandoffState(report,verification,clockMs);
+  const handoffState = getHandoffState(report,proposal,verification,clockMs);
   const servApproved = handoffState==='READY' && report?.proposal.method==='GET';
   const catalogChecks = useMemo(()=>evaluateCatalogReview(proposal,catalogReview),[proposal,catalogReview]);
   const catalogReady = catalogChecks.every(check=>check.passed);
@@ -114,7 +116,14 @@ export default function Page() {
   const commands = useMemo(()=>buildKiteSteps(proposal,catalogReview,servApproved,kiteSafety),[proposal,catalogReview,servApproved,kiteSafety]);
   const reconciliation = useMemo(()=>reconcileObservation(proposal,catalogReview,observation),[proposal,catalogReview,observation]);
 
+  function invalidatePendingAnalysis() {
+    analysisNonce.current+=1;
+    analysisAbort.current?.abort();
+    analysisAbort.current=null;
+    setBusy(false);
+  }
   function update<K extends keyof Proposal>(key:K,value:Proposal[K]) {
+    invalidatePendingAnalysis();
     setProposal(v=>({...v,[key]:value}));
     setObservation({...emptyObservation});
     setCatalogReview(v=>({...v,userConfirmed:false}));
@@ -123,6 +132,7 @@ export default function Page() {
     setReport(null);setVerification('idle');setError('');setNotifications('');
   }
   function selectCase(id:CaseId) {
+    invalidatePendingAnalysis();
     setCaseId(id);setProposal({...cases[id].proposal});
     setObservation({...emptyObservation});
     setCatalogReview({serviceId:'',endpoint:'',priceUsd:0,userConfirmed:false});
@@ -137,6 +147,8 @@ export default function Page() {
     setObservation({...emptyObservation});
   }
   function localCheck() {
+    invalidatePendingAnalysis();
+    setKiteSafety({...defaultKiteSafety});
     verificationNonce.current+=1;
     setVerification('idle');
     const checked=evaluate(proposal);
@@ -144,22 +156,40 @@ export default function Page() {
     setError('');
   }
   async function liveAnalysis() {
+    if(busy) return;
     if(!access.trim()){setError('Enter the project access code to enable a real SERV request.');return;}
+    const nonce=++analysisNonce.current;
+    analysisAbort.current?.abort();
+    const controller=new AbortController();
+    analysisAbort.current=controller;
+    const submittedProposal={...proposal};
     verificationNonce.current+=1;
     setVerification('idle');
     setBusy(true);setError('');setReport(null);setKiteSafety({...defaultKiteSafety});
     try{
       const response=await fetch('/api/analyze',{
-        method:'POST',headers:{'Content-Type':'application/json','x-spendproof-access':access},body:JSON.stringify(proposal)
+        method:'POST',
+        headers:{'Content-Type':'application/json','x-spendproof-access':access},
+        body:JSON.stringify(submittedProposal),
+        signal:controller.signal,
       });
       const data=await response.json();
+      // A response for an edited or replaced purchase must never reach the UI.
+      if(nonce!==analysisNonce.current) return;
       if(!response.ok) throw Error(typeof data.error==='string'?data.error:'SERV is unavailable.');
       if(!data.policy || !['BLOCK','REVIEW'].includes(data.policy.verdict)) throw Error('Unexpected response format.');
-      setReport({createdAt:new Date().toISOString(),mode:data.mode,proposal:{...proposal},policy:data.policy,serv:data.serv||null,paymentExecuted:false,model:data.model,attestation:data.attestation||null});
+      setReport({createdAt:new Date().toISOString(),mode:data.mode,proposal:submittedProposal,policy:data.policy,serv:data.serv||null,paymentExecuted:false,model:data.model,attestation:data.attestation||null});
       setVerification('idle');
     }catch(e){
-      setError(e instanceof Error?e.message:'Unable to contact SERV.');
-    }finally{setBusy(false);}
+      if(nonce===analysisNonce.current && !(e instanceof Error && e.name==='AbortError')){
+        setError(e instanceof Error?e.message:'Unable to contact SERV.');
+      }
+    }finally{
+      if(nonce===analysisNonce.current){
+        setBusy(false);
+        analysisAbort.current=null;
+      }
+    }
   }
   async function verifyAttestation() {
     if(!report?.attestation)return;
@@ -321,7 +351,7 @@ export default function Page() {
               <label className="check-field"><input type="checkbox" disabled={!canCreateSession} checked={kiteSafety.activeSessionConfirmed} onChange={e=>setKiteSafety(v=>({...v,activeSessionConfirmed:e.target.checked}))}/><span><strong>I approved the exact session with my passkey, selected it in the CLI, and just confirmed it is active.</strong><small>Do this only after running the generated session commands. Check again immediately before payment; a session may expire at any time.</small></span></label>
             </div>
             {!canHandoff && <div className="blocked-alert"><ShieldAlert size={17}/> Payment execution stays locked until a signed SERV review, matching catalog, reviewed allowance, and a manually confirmed active passkey-approved session. Discovery and inspection remain available.</div>}
-            <div className="handoff-integrity" role="status"><div><ShieldCheck size={18}/><div><strong>{handoffState==='READY'?'Fresh signed SERV review verified':handoffState==='SIGNATURE_UNVERIFIED'?'Verify your SERV decision before a payment handoff':handoffState==='REVIEW_EXPIRED'?'SERV review expired — run a new analysis':handoffState==='DENIED'?'SERV assessment declined this payment':'Live SERV assessment required'}</strong><p>{handoffState==='READY'?'The server authenticated the signed intent, full policy and SERV explanation. This does not authenticate the merchant or execute a payment.':handoffState==='REVIEW_EXPIRED'?'Reviews can authorize a new handoff for 10 minutes only. Historical signatures remain viewable in Audit Trail.':'Open Audit Trail and verify the complete signed record, then return here. A local check is not a SERV approval.'}</p></div></div>{report?.attestation && handoffState!=='READY' && <button className="btn-outline" onClick={()=>setArea('audit')}>Open audit verification</button>}</div>
+            <div className="handoff-integrity" role="status"><div><ShieldCheck size={18}/><div><strong>{handoffState==='READY'?'Fresh signed SERV review verified':handoffState==='SIGNATURE_UNVERIFIED'?'Verify your SERV decision before a payment handoff':handoffState==='REVIEW_EXPIRED'?'SERV review expired — run a new analysis':handoffState==='REQUEST_CHANGED'?'Purchase changed — run a new SERV analysis':handoffState==='DENIED'?'SERV assessment declined this payment':'Live SERV assessment required'}</strong><p>{handoffState==='READY'?'The server authenticated the signed intent, full policy and SERV explanation. This does not authenticate the merchant or execute a payment.':handoffState==='REVIEW_EXPIRED'?'Reviews can authorize a new handoff for 10 minutes only. Historical signatures remain viewable in Audit Trail.':'Open Audit Trail and verify the complete signed record, then return here. A local check is not a SERV approval.'}</p></div></div>{report?.attestation && handoffState!=='READY' && <button className="btn-outline" onClick={()=>setArea('audit')}>Open audit verification</button>}</div>
             <div className="command-list">{commands.map((c,i)=><div className="command-block" key={c.id}><div className="command-title"><span className="command-index">{i+1}</span><div><strong>{c.title}</strong><p>{c.description}</p></div><span className="command-state">{c.stage}</span></div><div className={'terminal '+(c.command===null?'disabled':'')}><code>{c.command??'Locked until the relevant review and authorization requirements are satisfied.'}</code><button disabled={c.command===null} title={'Copy '+c.title} onClick={()=>copy(c.command??'',c.id)}>{copied===c.id?<Check size={17}/>:<Copy size={17}/>}</button></div></div>)}</div>
             <section className="receipt-review" aria-labelledby="receipt-review-title">
               <div className="receipt-review-header">
