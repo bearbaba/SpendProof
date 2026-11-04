@@ -36,6 +36,8 @@ test('one server-only SERV request signs complete output, not a payment receipt'
     assert.equal((init?.headers as Record<string,string>).Authorization,'Bearer private-serv-key-for-tests');
     const body=JSON.parse(String(init?.body));
     assert.equal(body.model,'serv-test-model');
+    assert.deepEqual(body.response_format,{type:'json_object'});
+    assert.equal(body.max_completion_tokens,1200);
     assert.equal(body.messages.length,2);
     assert.equal(body.messages[1].role,'user');
     return new Response(JSON.stringify(result()),{status:200});
@@ -144,4 +146,14 @@ test('untrusted usage metrics are not printed as valid usage or used for billing
   });
   assert.equal(response.ok,true);
   if(response.ok)assert.equal(response.data.usage,null);
+});
+
+test('SERV narration around JSON must fail closed without signing or retrying',async()=>{
+  let calls=0;
+  const decorated={...result(),choices:[{message:{content:'Here is the review: '+JSON.stringify(assessment)},finish_reason:'stop'}]};
+  const fetcher=(async()=>{calls++;return new Response(JSON.stringify(decorated),{status:200});}) as typeof fetch;
+  const response=await requestServAssessment({...args,fetcher});
+  assert.equal(calls,1);
+  assert.equal(response.ok,false);
+  if(!response.ok)assert.equal(response.code,'SERV_FORMAT');
 });
