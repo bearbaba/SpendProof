@@ -118,7 +118,33 @@ try {
     'Changed SERV evidence must never verify');
   console.log('PASS: altered reasoning fails production HMAC verification');
 
-  console.log('PRODUCTION_SMOKE_PASS: 6 end-to-end HTTP checks; no SERV or Kite payment initiated.');
+  // Chunked request deliberately has no Content-Length header.
+  // The API must reject it by counting actual body bytes.
+  const oversizedText=JSON.stringify({
+    attestation:signed.attestation,
+    proposal:signed.proposal,
+    policy:signed.policy,
+    serv:{...signed.serv,summary:'x'.repeat(19_000)},
+  });
+  const chunkedStream=new ReadableStream({
+    start(controller){
+      controller.enqueue(new TextEncoder().encode(oversizedText));
+      controller.close();
+    },
+  });
+  const oversized=await fetch(origin+'/api/verify',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:chunkedStream,
+    duplex:'half',
+    signal:AbortSignal.timeout(5000),
+  });
+  const tooLarge=await oversized.json();
+  assert(oversized.status===413,'Oversized chunked verification body must be rejected');
+  assert(tooLarge.authentic===false,'Oversized body cannot authenticate');
+  console.log('PASS: oversized chunked verification blocked without Content-Length');
+
+  console.log('PRODUCTION_SMOKE_PASS: 7 end-to-end HTTP checks; no SERV or Kite payment initiated.');
 }catch(error){
   console.error('PRODUCTION_SMOKE_FAIL:',error instanceof Error?error.message:String(error));
   console.error('Application diagnostic:',logs.replaceAll(sentinel,'[redacted]'));
