@@ -78,6 +78,12 @@ A SERV assessment only applies to the exact task, provider, URL and monetary lim
 
 Kite's official documentation currently uses different session command forms in the CLI reference and the Payments walkthrough. The generated commands follow [CLI reference](https://docs.gokite.ai/reference/kpass-cli); always inspect your installed `kpass` / `ksearch` version and `--help` before using them with real funds.
 
+## Verified public demo
+
+The demo deployment is at https://spendproof.vercel.app/. It supports policy-only walkthroughs without a wallet, an API key or funds. On 2026-11-04 the production deployment returned HTTP 200 and `/api/status` reported paid SERV disabled and no in-app payment execution.
+
+Run `npm run smoke:live` from a machine with internet access to check the **public deployed** Home and safe API behaviour. This uses anonymous GETs and safe test POSTs only, and never requests SERV credits or a Kite payment. CI runs it on PRs. It does not perform click-through/mobile visual tests or prove live SERV/Kite acceptance.
+
 ## Current verification and limits
 
 - The local deterministic decision test suite can run without credentials using `npm test`.
