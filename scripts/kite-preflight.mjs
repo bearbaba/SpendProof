@@ -4,7 +4,7 @@
  * It never authenticates, creates a session, signs, spends or requests funds.
  */
 import { spawnSync } from 'node:child_process';
-import { READ_ONLY_PROBES, summarizeKitePreflight } from '../lib/kite-preflight.ts';
+import { READ_ONLY_PROBES, summarizeKitePreflight, kiteExecutableForPlatform } from '../lib/kite-preflight.ts';
 
 const probes={};
 for(const spec of READ_ONLY_PROBES){
@@ -13,9 +13,7 @@ for(const spec of READ_ONLY_PROBES){
   }
   // Kite's native Windows installers provide .exe binaries. Spawn them
   // directly: shell:true would concatenate arguments unsafely (Node DEP0190).
-  const executable=process.platform==='win32'
-    ? spec.executable+'.exe'
-    : spec.executable;
+  const executable=kiteExecutableForPlatform(spec.executable,process.platform);
   const result=spawnSync(executable,[...spec.args],{
     encoding:'utf8',
     timeout:8000,
