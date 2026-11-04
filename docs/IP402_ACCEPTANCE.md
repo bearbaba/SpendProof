@@ -11,7 +11,7 @@ Status recorded: **2026-11-04**. User-operated Windows Kite Passport CLI and an 
 - Anonymous request GET https://ip402.xyz/v1/geo returned **HTTP/1.1 402 Payment Required**, Date **2026-11-04 03:43:01 UTC**. The Payment-Required header advertised x402 version 2, Base Mainnet (eip155:8453), exact payment, USDC asset **0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913**, amount **10000** base units = **0.01 USDC**. Alternative networks and a separate MPP option were also present.
 - Merchant response documents a required IP input (public example 8.8.8.8), optional lang, and protocol/network selection. Do NOT use bundle or MPP for one-payment acceptance.
 - Merchant notes Arc payment uses Circle Gateway balance, not plain wallet USDC. Use the Base accept as the intended network.
-- Challenge is time-bounded; it is not a frozen quote. **No SERV analysis, passkey session, user payment, receipt or confirmed settlement has occurred.**
+- Challenge is time-bounded; it is not a frozen quote. **Live SERV analysis, signed HMAC and browser verification did pass on 2026-11-04 using the real IP402 candidate (operator's local evidence). No Kite passkey session, user payment, receipt or confirmed settlement has occurred.**
 
 ## Reproducible read-only quote check
 
@@ -19,7 +19,7 @@ Run from the latest SpendProof main on a machine with internet access:
 
     npm run inspect:ip402
 
-It sends only GET to https://ip402.xyz/v1/geo?ip=8.8.8.8&payment_protocol=x402&payment_network=base. It supplies no payment header, Passport token, wallet signature, Kite session or SERV access code. It requires HTTP 402 and a valid x402 v2 header for the exact GeoIP resource, Base USDC, and 0.01 USDC. Unexpected status, changed asset, network or price fails closed without retry. Output is a concise summary with paymentExecuted false.
+It sends only GET to https://ip402.xyz/v1/geo?ip=8.8.8.8&payment_protocol=x402&payment_network=base. For a combined **free, read-only catalog + quote** inspection, run `npm run accept:kite`; see [KITE_READONLY_GATE.md](KITE_READONLY_GATE.md). It supplies no payment header, Passport token, wallet signature, Kite session or SERV access code. It requires HTTP 402 and a valid x402 v2 header for the exact GeoIP resource, Base USDC, and 0.01 USDC. Unexpected status, changed asset, network or price fails closed without retry. Output is a concise summary with paymentExecuted false.
 
 A 402 response is **not** an IP lookup result and **not** payment proof. Do not publish secret tokens or login payloads with the output.
 
@@ -35,7 +35,7 @@ A 402 response is **not** an IP lookup result and **not** payment proof. Do not 
 ## Remaining real-money gates
 
 - Enable SERV only in a protected environment with a confirmed provider-side credit budget and a durable shared throttle; public deployment stays disabled.
-- Assess the exact reviewed IP402 query with real SERV and verify the complete signed V2 decision, unexpired within 10 minutes. If declined, STOP.
+- Operator's real SERV review and signature verification passed. **The signed review is valid for handoff only for 10 minutes**, so obtain a fresh SERV-signed decision when actually ready to request a session; prior evidence is not reusable payment authorization. If declined, STOP.
 - Inspect the Passport recurring allowance. It can pay after a spending session expires, so one session is not an isolation guarantee.
 - Check the fresh Base x402 price **and** Passport funding, transaction/bridge/routing fees; quoted provider cost is not the total fee estimate.
 - Human operator must explicitly approve any costs and a one-payment session, with tightly bounded per-payment and total caps, via passkey. Confirm the correct session is active.
