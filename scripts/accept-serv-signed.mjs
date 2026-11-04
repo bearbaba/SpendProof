@@ -59,7 +59,7 @@ if(args.length>1 || (args.length===1 && args[0]!=='--live')){
       console.error('SERV_SIGNED_LIVE_FAILED:',JSON.stringify({
         code:result.code,
         upstreamStatus:result.upstreamStatus??null,
-        paidRequestAttempted:result.code!=='SERV_FORMAT',
+        paidRequestAttempted:true,
         paymentExecuted:false,
         retryAttempted:false,
       }));
