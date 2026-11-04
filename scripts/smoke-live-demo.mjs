@@ -43,7 +43,7 @@ try {
     for(const visible of [
       'SpendProof','Try the demo','Within budget','Over spending cap',
       'Missing evidence','Explore SpendProof without a wallet or API key',
-      'No payment is initiated by this browser',
+      'No automatic transfers',
     ]) {
       assert.ok(html.includes(visible),'Missing public demo cue: '+visible);
     }
