@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyDecisionBundle, type DecisionBundle } from '../../../lib/attestation';
+import { readBoundedJson, BoundedBodyError } from '../../../lib/limited-json';
 
 export const runtime = 'nodejs';
 const reply = (data: unknown, status = 200) => NextResponse.json(data, {
@@ -14,12 +15,14 @@ export async function POST(req: NextRequest) {
 
   let body: unknown;
   try {
-    if (Number(req.headers.get('content-length') || 0) > 18000) {
-      return reply({ authentic: false, error: 'Payload too large.' }, 413);
-    }
-    body = await req.json();
-  } catch {
-    return reply({ authentic: false, error: 'Malformed JSON.' }, 400);
+    // Enforce the size of the actual incoming bytes, not only Content-Length.
+    body = await readBoundedJson(req, 18_000);
+  } catch(error) {
+    const status=error instanceof BoundedBodyError?error.status:400;
+    return reply({
+      authentic:false,
+      error:status===413?'Decision bundle exceeds the 18 KB limit.':'Malformed decision bundle JSON.',
+    }, status);
   }
   if (!body || typeof body !== 'object' || Array.isArray(body)) {
     return reply({ authentic: false, error: 'Expected a decision bundle.' }, 422);
