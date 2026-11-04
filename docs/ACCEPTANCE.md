@@ -18,6 +18,13 @@ Status: **Hackathon form submitted. Product still in development and not end-to-
 | Failure path | Mocked SERV error coverage and production HTTP smoke tests | Live invalid-key, expired-session, insufficient-budget and provider-error acceptance |
 | Public demo and X post | Public demo not deployed; X post URL not in repository | Public demo, walkthrough and tagged @openservai post URL archived |
 
+## Security acceptance: intent binding and request races
+
+- **Always compare the signed SERV proposal to the currently edited purchase.** Changing amount, budget, per-transaction cap, remaining allocation, endpoint, provider, purpose, evidence URL, method or x402 claim invalidates handoff.
+- **Invalidate in-flight requests when an input or example changes.** Browser responses from old requests must be ignored even when the upstream SERV request eventually finishes; aborting the browser request does not guarantee the model provider will not charge.
+- **Verify API payload bounds using actual bytes**, including chunked requests without `Content-Length`. The production HTTP smoke test exercises this path.
+- A valid old signature remains historically authentic but must never authorize a different purchase.
+
 ## Mocked API integration checks
 
 The CI suite validates one-call SERV execution and rejects malformed JSON, truncated completions, unsupported recommendations, network errors, upstream authorization/credit errors and expired/unverified decision handoffs. These tests do **not** count as a live SERV or payment acceptance.
