@@ -45,7 +45,8 @@ export function parseServAssessment(raw: string): ServAssessment {
     value.length <= 8 &&
     value.every(v => typeof v === 'string' && v.length > 0 && v.length <= 500);
   const invalidFields: string[] = [];
-  if (typeof x.summary !== 'string' || x.summary.trim().length < 8 || x.summary.length > 1200) invalidFields.push('summary');
+  const summary = x.summary;
+  if (typeof summary !== 'string' || summary.trim().length < 8 || summary.length > 1200) invalidFields.push('summary');
   if (!risks.includes(x.risk as typeof risks[number])) invalidFields.push('risk');
   if (!validList(x.concerns)) invalidFields.push('concerns');
   if (!validList(x.evidenceGaps)) invalidFields.push('evidenceGaps');
