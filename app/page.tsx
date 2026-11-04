@@ -73,6 +73,7 @@ function Dot({ ok }:{ok:boolean}) {
 export default function Page() {
   const [area,setArea] = useState<Area>('workspace');
   const [servMode,setServMode] = useState<'unknown'|'disabled'|'live-enabled-unverified'>('unknown');
+  const [serverReviewCap,setServerReviewCap] = useState<number|null>(null);
   const [caseId,setCaseId] = useState<CaseId>('within');
   const [proposal,setProposal] = useState<Proposal>(cases.within.proposal);
   const [report,setReport] = useState<Report|null>(null);
@@ -100,7 +101,13 @@ export default function Page() {
     fetch('/api/status',{cache:'no-store'})
       .then(r=>r.ok?r.json():null)
       .then(data=>{
-        if(active) setServMode(data?.servMode==='live-enabled-unverified'?'live-enabled-unverified':'disabled');
+        if(active){
+          setServMode(data?.servMode==='live-enabled-unverified'?'live-enabled-unverified':'disabled');
+          setServerReviewCap(
+            typeof data?.serverReviewMaxUsd==='number' && Number.isFinite(data.serverReviewMaxUsd)
+              ? data.serverReviewMaxUsd : null
+          );
+        }
       }).catch(()=>{if(active)setServMode('disabled');});
     return()=>{active=false;};
   },[]);
@@ -238,7 +245,7 @@ export default function Page() {
         <a className="nav-item nav-link" target="_blank" rel="noreferrer" href="https://www.openserv.ai/hackathon-2"><Globe2 size={18}/> Hackathon 02 <ArrowUpRight className="nav-chevron" size={15}/></a>
       </div>
       <div className="sidebar-bottom">
-        <div className="system-box"><div className="system-head"><span className="pulse-dot"/> System integrity</div><strong>Policy engine ready</strong><span>{servMode==='live-enabled-unverified'?'SERV configured · not yet verified':servMode==='unknown'?'Checking server mode…':'SERV disabled · local policy only'}</span></div>
+        <div className="system-box"><div className="system-head"><span className="pulse-dot"/> System integrity</div><strong>Policy engine ready</strong><span>{servMode==='live-enabled-unverified'?'SERV configured · not yet verified':servMode==='unknown'?'Checking server mode…':'SERV disabled · local policy only'}</span><span>{serverReviewCap!==null?'Server signing cap: '+usd(serverReviewCap)+' per purchase':'Server signing cap unavailable'}</span></div>
         <div className="side-profile"><BrandMark small/><div><strong>Builder workspace</strong><span>Hackathon prototype · v0.1</span></div><span className="side-more">•••</span></div>
       </div>
     </aside>
