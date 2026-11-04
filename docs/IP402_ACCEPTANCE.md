@@ -32,6 +32,10 @@ A 402 response is **not** an IP lookup result and **not** payment proof. Do not 
 5. Open Audit Trail. There is no live SERV signature or payment evidence.
 6. Open Kite handoff. Service ID, exact URL and price require manual cross-check. Session and execute commands remain locked without a fresh, verified SERV-signed review and the required Kite session safety acknowledgements.
 
+## New read-only gate evidence (2026-11-04, operator-reported)
+
+`npm run preflight:kite` reported `READ_ONLY_PREFLIGHT_PASS`. `npm run accept:kite` reported `KITE_UNPAID_READINESS_PASS`, with matching fixed catalog service ID, endpoint GET, 0.01 USDC price, Base `eip155:8453` and x402-v2 HTTP 402 challenge for 10000 USDC base units. No allowance or wallet verification, spending session, passkey approval, purchase or settlement; `readyForPayment=false`. This operator terminal result confirms an unpaid snapshot only. The quote remains time-sensitive.
+
 ## Remaining real-money gates
 
 - Enable SERV only in a protected environment with a confirmed provider-side credit budget and a durable shared throttle; public deployment stays disabled.
