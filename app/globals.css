@@ -351,3 +351,11 @@ a { color:inherit; text-decoration:none; }
 .allowance-guard .check-field{margin:10px 0 0;background:#fffefd;border-color:#f0e4d7;align-items:flex-start;}
 .allowance-guard .check-field input:disabled{cursor:not-allowed;}
 @media(max-width:600px){.allowance-guard{padding:13px;}}
+
+.handoff-integrity { margin: 16px 0; display:flex;justify-content:space-between;align-items:center;gap:14px;padding:16px 18px;border-radius:12px;background:#f7f9fc;border:1px solid #dde5f1;}
+.handoff-integrity>div{display:flex;align-items:flex-start;gap:11px;min-width:0;}
+.handoff-integrity svg{flex-shrink:0;margin-top:2px;color:#5e6da0;}
+.handoff-integrity strong{display:block;font-size:12px;color:#27354b;line-height:1.5;}
+.handoff-integrity p{font-size:11px;color:#77849a;line-height:1.65;margin:5px 0 0;}
+.handoff-integrity>button{flex-shrink:0;white-space:nowrap;}
+@media(max-width:720px){.handoff-integrity{flex-direction:column;align-items:stretch}.handoff-integrity>button{width:100%}}

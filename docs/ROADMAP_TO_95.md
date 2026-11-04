@@ -7,12 +7,12 @@ The 9.5/10 score is an internal goal, **not** a judge rating or a claim that an 
 ## Completed and checked
 
 - Responsive decision workspace, local spending policies, explicit BLOCK / REVIEW decision stages.
-- SERV server-side inference integration, fail-closed JSON response validation and opt-in live smoke test.
-- HMAC-signed V2 decision receipt binding original proposal, policy verdict/checks, and the exact SERV assessment.
+- SERV server-side inference integration, fail-closed parsing and no-retry mock-upstream tests covering happy and failure paths. Live smoke test is opt-in and still unverified.
+- HMAC-signed V2 decision receipt binding the original proposal, policy checks and exact SERV assessment. Kite handoff now requires verified signature and a review less than ten minutes old.
 - Public verification route for full decision bundles, including tamper tests.
 - Kite CLI discovery, manual catalog cross-check, least-privilege single-payment spending session.
 - Kite post-payment observation reconciliation with explicit `MATCHED_UNVERIFIED` / `MISMATCH` outcomes.
-- CI at PR #4: **36 tests passed, 0 failed, TypeScript passed, production build passed.**
+- CI has passed earlier iterations; check the latest GitHub Actions status for the current total.
 - No in-app payment, custody, or on-chain verification is falsely represented as completed.
 
 ## Remaining acceptance blockers
