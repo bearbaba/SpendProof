@@ -3,6 +3,7 @@ import test from 'node:test';
 import { requestServAssessment, SERV_ENDPOINT } from '../lib/serv-inference.ts';
 import { verifyDecisionBundle } from '../lib/attestation.ts';
 import { evaluate, type Proposal } from '../lib/policy.ts';
+import { evaluateSignedPolicy } from '../lib/owner-policy.ts';
 
 const proposal:Proposal={
   task:'Purchase one weather observation for a travel agent',
@@ -23,7 +24,7 @@ const result=(data:Record<string,unknown>=assessment)=>({
   choices:[{message:{content:JSON.stringify(data)},finish_reason:'stop'}],
   usage:{prompt_tokens:125,completion_tokens:70},
 });
-const originalPolicy=evaluate(proposal,'2026-11-04T00:00:00.000Z');
+const originalPolicy=evaluateSignedPolicy(proposal,100,'2026-11-04T00:00:00.000Z');
 const args={proposal,policy:originalPolicy,key:'private-serv-key-for-tests',model:'serv-test-model',auditSecret:secret};
 
 test('one server-only SERV request signs complete output, not a payment receipt',async()=>{
@@ -53,12 +54,23 @@ test('one server-only SERV request signs complete output, not a payment receipt'
   }).authentic,true);
 });
 
+test('missing server-owned ceiling check cannot be used to sign any decision',async()=>{
+  let calls=0;
+  const response=await requestServAssessment({
+    ...args,
+    policy:evaluate(proposal),
+    fetcher:(async()=>{calls++;throw Error('should not call provider');}) as typeof fetch,
+  });
+  assert.equal(response.ok,false);
+  assert.equal(calls,0);
+});
+
 test('a blocked spending proposal never sends billable SERV traffic',async()=>{
   let calls=0;
   const blocked={...proposal,amountUsd:10};
   const fetched=(async()=>{calls++;throw Error('should not happen');}) as typeof fetch;
   const response=await requestServAssessment({
-    ...args,proposal:blocked,policy:evaluate(blocked),fetcher:fetched,
+    ...args,proposal:blocked,policy:evaluateSignedPolicy(blocked,100),fetcher:fetched,
   });
   assert.equal(response.ok,false);
   assert.equal(calls,0);
