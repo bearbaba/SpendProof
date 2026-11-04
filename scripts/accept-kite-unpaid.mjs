@@ -74,6 +74,9 @@ try {
 const passed=readOnly.catalogLookup==='CATALOG_JSON_OBSERVED' &&
   readOnly.catalogSignals?.expectedServiceIdObserved===true &&
   readOnly.catalogSignals?.expectedDomainObserved===true &&
+  readOnly.catalogSignals?.expectedGeoRouteObserved===true &&
+  readOnly.catalogSignals?.getMethodObserved===true &&
+  readOnly.catalogSignals?.priceTextObserved===true &&
   readOnly.quoteStatus==='BASE_USDC_0_01_CHALLENGE_CONFIRMED';
 
 console.log(JSON.stringify({
