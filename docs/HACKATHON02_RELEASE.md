@@ -57,7 +57,7 @@ Demo: [INSERT VERIFIED PUBLIC DEMO URL]
 | SERV API failure handling | Mock upstream tests + operator's SERV terminal outputs | Live valid JSON and signed V2 decision confirmed by builder; failure paths mocked |
 | HMAC decision integrity | Unit + production HTTP smoke, live local CLI and browser | Operator reports signed V2 PASS, HMAC/tamper rejection and live localhost Audit signature verification. No payment proof. |
 | Kite CLI generated commands | Source and read-only dialect preflight | Windows kpass 1.8.0 + ksearch 1.0.6 real CLI preflight PASS; no paid session |
-| Read-only Kite acceptance | `npm run accept:kite` CLI catalog + anonymous HTTP 402 (operator rerun pending) | Implemented in source; no session/payment and not yet run on operator's machine |
+| Read-only Kite acceptance | Real Windows `npm run preflight:kite` + `npm run accept:kite` terminal output, 2026-11-04 | **Operator-reported PASS**, catalog and Base 0.01 USDC x402 HTTP 402 challenge matched. No verified wallet balance, allowance, session, payment or settlement |
 | Real Kite x402 payment | Session, activity, independently checked transaction | NOT PERFORMED |
 | Public demo | Deployed URL + real production HTTP smoke | HTTP 200 and 6 safe live checks PASS; interactive desktop/mobile walkthrough pending |
 | Official Hackathon 02 project submission | Actual final submission confirmation | NOT YET VERIFIED |
