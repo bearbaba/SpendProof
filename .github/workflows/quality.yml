@@ -25,3 +25,6 @@ jobs:
         run: npm run build
       - name: Production HTTP acceptance (no paid API calls)
         run: npm run smoke:production
+      - name: Live public demo acceptance (no credits or payments)
+        if: github.event_name == 'pull_request'
+        run: npm run smoke:live
