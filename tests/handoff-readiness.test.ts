@@ -27,34 +27,58 @@ function report(issuedAt=new Date(now).toISOString()){
     policyVerdict:'REVIEW',risk:serv.risk,recommendation:serv.recommendation,
     model:'serv-test-model',issuedAt,paymentExecuted:false,
   });
-  return { mode:'serv-live' as const,policy,serv,attestation };
+  return { mode:'serv-live' as const,proposal,policy,serv,attestation };
 }
 
 test('fresh, verified, non-denied SERV record is eligible for manual handoff',()=>{
-  assert.equal(getHandoffState(report(),'verified',now),'READY');
+  assert.equal(getHandoffState(report(),proposal,'verified',now),'READY');
 });
 
 test('live record alone never unlocks a payment without signature verification',()=>{
   for(const status of ['idle','checking','invalid'] as const){
-    assert.equal(getHandoffState(report(),status,now),'SIGNATURE_UNVERIFIED');
+    assert.equal(getHandoffState(report(),proposal,status,now),'SIGNATURE_UNVERIFIED');
   }
 });
 
 test('reviews expire and future-dated records cannot be reused for a payment',()=>{
-  assert.equal(getHandoffState(report(new Date(now-REVIEW_VALIDITY_MS-1).toISOString()),'verified',now),'REVIEW_EXPIRED');
-  assert.equal(getHandoffState(report(new Date(now+61_000).toISOString()),'verified',now),'REVIEW_EXPIRED');
-  assert.equal(getHandoffState(report(new Date(now-REVIEW_VALIDITY_MS).toISOString()),'verified',now),'READY');
+  assert.equal(getHandoffState(report(new Date(now-REVIEW_VALIDITY_MS-1).toISOString()),proposal,'verified',now),'REVIEW_EXPIRED');
+  assert.equal(getHandoffState(report(new Date(now+61_000).toISOString()),proposal,'verified',now),'REVIEW_EXPIRED');
+  assert.equal(getHandoffState(report(new Date(now-REVIEW_VALIDITY_MS).toISOString()),proposal,'verified',now),'READY');
 });
 
 test('DENY and high-risk verdicts never unlock payments even with verified signature status',()=>{
   const denied=report();
-  assert.equal(getHandoffState({...denied,serv:{...serv,recommendation:'DENY'}},'verified',now),'DENIED');
-  assert.equal(getHandoffState({...denied,serv:{...serv,risk:'high'}},'verified',now),'DENIED');
-  assert.equal(getHandoffState({...denied,policy:{...policy,verdict:'BLOCK'}},'verified',now),'MISSING_LIVE_REVIEW');
+  assert.equal(getHandoffState({...denied,serv:{...serv,recommendation:'DENY'}},proposal,'verified',now),'DENIED');
+  assert.equal(getHandoffState({...denied,serv:{...serv,risk:'high'}},proposal,'verified',now),'DENIED');
+  assert.equal(getHandoffState({...denied,policy:{...policy,verdict:'BLOCK'}},proposal,'verified',now),'MISSING_LIVE_REVIEW');
 });
 
 test('local checks and missing records never authorize payment',()=>{
-  assert.equal(getHandoffState(null,'verified',now),'MISSING_LIVE_REVIEW');
-  assert.equal(getHandoffState({...report(),mode:'local-policy'},'verified',now),'MISSING_LIVE_REVIEW');
-  assert.equal(getHandoffState({...report(),attestation:null},'verified',now),'MISSING_LIVE_REVIEW');
+  assert.equal(getHandoffState(null,proposal,'verified',now),'MISSING_LIVE_REVIEW');
+  assert.equal(getHandoffState({...report(),mode:'local-policy'},proposal,proposal,'verified',now),'MISSING_LIVE_REVIEW');
+  assert.equal(getHandoffState({...report(),attestation:null},proposal,proposal,'verified',now),'MISSING_LIVE_REVIEW');
+});
+
+test('changed spending amount, caps, endpoint, purpose or method invalidate the prior SERV review',()=>{
+  for(const updated of [
+    {...proposal,amountUsd:0.3},
+    {...proposal,perTxUsd:0.3},
+    {...proposal,remainingUsd:0.5},
+    {...proposal,budgetUsd:3},
+    {...proposal,endpoint:'https://different.example.org/api'},
+    {...proposal,task:'Purchase a separate API request'},
+    {...proposal,evidenceUrl:'https://another.example.org/pricing'},
+    {...proposal,provider:'Different Provider'},
+    {...proposal,supportsX402:false},
+    {...proposal,method:'POST' as const},
+  ]){
+    assert.equal(getHandoffState(report(),updated,'verified',now),'REQUEST_CHANGED');
+  }
+});
+
+test('an unrelated new form cannot use an old verified decision to unlock payments',()=>{
+  const altered={...proposal,amountUsd:0.99,budgetUsd:5};
+  const state=getHandoffState(report(),altered,'verified',now);
+  assert.notEqual(state,'READY');
+  assert.equal(state,'REQUEST_CHANGED');
 });
