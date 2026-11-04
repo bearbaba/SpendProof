@@ -11,7 +11,8 @@
     "smoke:serv": "node --experimental-strip-types --env-file=.env.local scripts/serv-smoke.mjs",
     "smoke:production": "node scripts/smoke-production.mjs",
     "preflight:kite": "node --experimental-strip-types scripts/kite-preflight.mjs",
-    "smoke:live": "node scripts/smoke-live-demo.mjs"
+    "smoke:live": "node scripts/smoke-live-demo.mjs",
+    "inspect:ip402": "node --experimental-strip-types scripts/inspect-ip402.mjs"
   },
   "dependencies": {
     "next": "^16.0.0",

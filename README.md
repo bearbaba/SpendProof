@@ -78,6 +78,12 @@ A SERV assessment only applies to the exact task, provider, URL and monetary lim
 
 Kite's official documentation currently uses different session command forms in the CLI reference and the Payments walkthrough. The generated commands follow [CLI reference](https://docs.gokite.ai/reference/kpass-cli); always inspect your installed `kpass` / `ksearch` version and `--help` before using them with real funds.
 
+## Real x402 candidate (read-only evidence)
+
+A real Kite-catalog candidate, **IP402 GeoIP**, is available in the Decision workspace as an explicitly **UNPAID** example, separate from the three illustrative test fixtures. It uses `GET /v1/geo` with public example IP `8.8.8.8`, catalog service ID `2a41b31ec8665c50f49098a7` and an observed one-cent Base USDC HTTP 402 requirement. The exact URL's live challenge may change.
+
+Run `npm run inspect:ip402` on your own machine for a **no-payment GET** that verifies HTTP 402, x402 version 2, Base USDC token and exactly 0.01 USDC. It does not authenticate with Kite, spend USDC, verify provider trust, run SERV or create a session. Any mismatch fails closed. See `docs/IP402_ACCEPTANCE.md`.
+
 ## Verified public demo
 
 The demo deployment is at https://spendproof.vercel.app/. It supports policy-only walkthroughs without a wallet, an API key or funds. On 2026-11-04 the production deployment returned HTTP 200 and `/api/status` reported paid SERV disabled and no in-app payment execution.

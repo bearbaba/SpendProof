@@ -56,10 +56,14 @@ Demo: [INSERT VERIFIED PUBLIC DEMO URL]
 | Correct SERVER status and demo UI | HTTP production smoke, tests | Automated checks passed; public browser acceptance pending |
 | SERV API failure handling | Mock upstream tests | Tested with mocks; live provider unverified |
 | HMAC decision integrity | Unit and production HTTP smoke | Tested with fake test-only signing secret |
-| Kite CLI generated commands | Source and read-only dialect preflight | Local real CLI still needs verification |
+| Kite CLI generated commands | Source and read-only dialect preflight | Windows kpass 1.8.0 + ksearch 1.0.6 real CLI preflight PASS; no paid session |
 | Real Kite x402 payment | Session, activity, independently checked transaction | NOT PERFORMED |
-| Public demo | Deployed URL, desktop/mobile walkthrough | NOT YET VERIFIED |
+| Public demo | Deployed URL + real production HTTP smoke | HTTP 200 and 6 safe live checks PASS; interactive desktop/mobile walkthrough pending |
 | Official Hackathon 02 project submission | Actual final submission confirmation | NOT YET VERIFIED |
+
+## Real IP402 x402 catalog evidence (unpaid)
+
+User-initiated Kite discovery and direct merchant HTTP 402 validated a GET-only IP402 catalog candidate at a listed 0.01 USDC on Base. On the public workspace, load it separately from fake fixtures; run the read-only quote inspection locally with npm run inspect:ip402. These observations do NOT prove live SERV or a payment. See docs/IP402_ACCEPTANCE.md.
 
 ## Live acceptance — only the operator can complete
 
