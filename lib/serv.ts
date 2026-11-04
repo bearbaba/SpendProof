@@ -1,6 +1,26 @@
 import type { ServAssessment } from './policy.ts';
 
-export const SERV_RESPONSE_FORMAT = { type: 'json_object' } as const;
+// Require exact, typed fields at the provider boundary. The local parser below
+// still enforces content limits and fails closed on any schema mismatch.
+export const SERV_RESPONSE_FORMAT = {
+  type: 'json_schema',
+  json_schema: {
+    name: 'spendproof_risk_review_v1',
+    strict: true,
+    schema: {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        summary: {type: 'string', description: 'A concrete one-sentence risk summary, at least 8 characters.'},
+        risk: {type: 'string', enum: ['low', 'medium', 'high']},
+        concerns: {type: 'array', items: {type: 'string'}, description: 'List of short concerns, possibly empty.'},
+        evidenceGaps: {type: 'array', items: {type: 'string'}, description: 'List of missing independent verification evidence, possibly empty.'},
+        recommendation: {type: 'string', enum: ['REVIEW', 'DENY']},
+      },
+      required: ['summary','risk','concerns','evidenceGaps','recommendation'],
+    },
+  },
+} as const;
 
 const risks = ['low', 'medium', 'high'] as const;
 const recommendations = ['REVIEW', 'DENY'] as const;
