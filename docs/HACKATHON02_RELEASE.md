@@ -57,6 +57,7 @@ Demo: [INSERT VERIFIED PUBLIC DEMO URL]
 | SERV API failure handling | Mock upstream tests + operator's SERV terminal outputs | Live valid JSON and signed V2 decision confirmed by builder; failure paths mocked |
 | HMAC decision integrity | Unit + production HTTP smoke, live local CLI and browser | Operator reports signed V2 PASS, HMAC/tamper rejection and live localhost Audit signature verification. No payment proof. |
 | Kite CLI generated commands | Source and read-only dialect preflight | Windows kpass 1.8.0 + ksearch 1.0.6 real CLI preflight PASS; no paid session |
+| Read-only Kite acceptance | `npm run accept:kite` CLI catalog + anonymous HTTP 402 (operator rerun pending) | Implemented in source; no session/payment and not yet run on operator's machine |
 | Real Kite x402 payment | Session, activity, independently checked transaction | NOT PERFORMED |
 | Public demo | Deployed URL + real production HTTP smoke | HTTP 200 and 6 safe live checks PASS; interactive desktop/mobile walkthrough pending |
 | Official Hackathon 02 project submission | Actual final submission confirmation | NOT YET VERIFIED |
@@ -71,8 +72,8 @@ User-initiated Kite discovery and direct merchant HTTP 402 validated a GET-only 
 2. Run: npm run smoke:serv — this makes a **real potentially billable** API call. Save only redacted evidence.
 3. Run: npm run preflight:kite — read-only version/help checks. Confirm actual CLI syntax on the operator's machine.
 4. Discover a real paid service in the Kite catalog and inspect its price, URL, currency and payment method.
-5. Local signed SERV acceptance is already builder-reported PASS. Next, follow [LOCAL_WEB_ACCEPTANCE.md](LOCAL_WEB_ACCEPTANCE.md) for a separate opt-in paid browser `/api/analyze` → `/api/verify` acceptance, using only localhost and the same IP402 purchase intent.
-6. Inspect/restrict any recurring allowance, create a single-price session, approve by passkey and verify it is currently active.
+5. Both local SERV signing and localhost browser `/api/analyze` → `/api/verify` acceptance are builder-observed PASS from November 4, 2026. A fresh SERV-signed review is required when a real Kite session is later requested because handoff freshness expires after 10 minutes.
+6. First run `npm run accept:kite` (free read-only IP402 catalog/quote gate) on the operator's machine; inspect the live output. Then inspect/restrict any recurring allowance, confirm wallet funding/fees, and **only after separate owner approval** create a single-price session, approve by passkey and verify it is currently active. See [KITE_READONLY_GATE.md](KITE_READONLY_GATE.md).
 7. Execute exactly one authorized x402 API request. Verify service response, Passport activity, amount and transaction on an independent source.
 8. Save a redacted receipt, upload any screenshots to the actual submission system, and update this evidence table from NOT PERFORMED to verified with actual URLs/IDs.
 9. Verify the **official Hackathon 02 project submission workflow** is completed. An OpenServ pre-registration/feedback Typeform receipt alone does not prove the finished project has been submitted.
