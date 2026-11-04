@@ -98,7 +98,7 @@ Kite's official documentation currently uses different session command forms in 
 
 A real Kite-catalog candidate, **IP402 GeoIP**, is available in the Decision workspace as an explicitly **UNPAID** example, separate from the three illustrative test fixtures. It uses `GET /v1/geo` with public example IP `8.8.8.8`, catalog service ID `2a41b31ec8665c50f49098a7` and an observed one-cent Base USDC HTTP 402 requirement. The exact URL's live challenge may change.
 
-Run `npm run inspect:ip402` on your own machine for a **no-payment GET** that verifies HTTP 402, x402 version 2, Base USDC token and exactly 0.01 USDC. It does not authenticate with Kite, spend USDC, verify provider trust, run SERV or create a session. Any mismatch fails closed. See `docs/IP402_ACCEPTANCE.md`.
+Run `npm run inspect:ip402` on your own machine for a **no-payment GET** that verifies HTTP 402, x402 version 2, Base USDC token and exactly 0.01 USDC. For a combined no-payment Kite catalog lookup and quote check, run `npm run accept:kite`; see [Kite read-only acceptance](docs/KITE_READONLY_GATE.md). It does not authenticate with Kite, spend USDC, verify provider trust, run SERV or create a session. Any mismatch fails closed. See `docs/IP402_ACCEPTANCE.md`.
 
 ## Verified public demo
 
@@ -110,7 +110,7 @@ Run `npm run smoke:live` from a machine with internet access to check the **publ
 
 - The local deterministic decision test suite can run without credentials using `npm test`.
 - The builder confirmed a real SERV Reasoning smoke result **and** a separate locally signed, HMAC-verified live decision on November 4, 2026. Live browser HTTP/UI acceptance, Kite session and real payment remain pending.
-- Kite service discovery and passkey-approved x402 payment must be performed externally; there is no live Kite payment proof yet.
+- Kite service discovery and passkey-approved x402 payment must be performed externally; there is no live Kite payment proof yet. The one-command `accept:kite` gate rechecks only the catalog and HTTP 402 quote and never creates a session or spends USDC.
 - HMAC authenticates the complete server-issued decision bundle and does **not** establish merchant identity, on-chain payment, or fulfillment.
 - Illustrative `example.org` providers are fixtures; do not send real payments to them.
 - POST paid requests remain blocked until their payload can be explicitly reviewed.
