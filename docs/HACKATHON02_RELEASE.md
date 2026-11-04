@@ -11,7 +11,7 @@ AI agents should not spend money based on an unverified URL or a budget they dec
 
 **What is working in code:** eight client-side policy checks; a server-owned decision signing ceiling; an optional protected SERV inference route; HMAC-signed audit decisions; a fail-closed manual Kite CLI handoff; JSON audit export; and manual post-payment reconciliation labeled unverified.
 
-**What is accepted (builder-reported terminal evidence):** live SERV risk inference and a separate real OpenServ call signed and verified as a SpendProof V2 HMAC decision on 2026-11-04. **Not yet accepted:** the complete live browser/API roundtrip, Kite passkey-approved spending session, x402 payment, independently verified settlement, and final Hackathon submission.
+**What is accepted (builder-reported terminal evidence):** live SERV risk inference and a separate real OpenServ call signed and verified as a SpendProof V2 HMAC decision on 2026-11-04. **Not yet accepted:** a Kite passkey-approved spending session, x402 payment, independently verified settlement, and final Hackathon submission. The local browser SERV + signature verification roundtrip also **passed via builder screenshots** on 2026-11-04.
 
 ## 90-second judge walkthrough (no credentials needed)
 
@@ -55,7 +55,7 @@ Demo: [INSERT VERIFIED PUBLIC DEMO URL]
 | Owner-controlled signed-review ceiling | Source + unit tests | Implemented; not a Kite on-chain cap |
 | Correct SERVER status and demo UI | HTTP production smoke, tests | Automated checks passed; public browser acceptance pending |
 | SERV API failure handling | Mock upstream tests + operator's SERV terminal outputs | Live valid JSON and signed V2 decision confirmed by builder; failure paths mocked |
-| HMAC decision integrity | Unit + production HTTP smoke and operator's real local acceptance | Builder-reported real signed V2 PASS: HMAC valid and tamper rejected; browser HTTP roundtrip pending |
+| HMAC decision integrity | Unit + production HTTP smoke, live local CLI and browser | Operator reports signed V2 PASS, HMAC/tamper rejection and live localhost Audit signature verification. No payment proof. |
 | Kite CLI generated commands | Source and read-only dialect preflight | Windows kpass 1.8.0 + ksearch 1.0.6 real CLI preflight PASS; no paid session |
 | Real Kite x402 payment | Session, activity, independently checked transaction | NOT PERFORMED |
 | Public demo | Deployed URL + real production HTTP smoke | HTTP 200 and 6 safe live checks PASS; interactive desktop/mobile walkthrough pending |
