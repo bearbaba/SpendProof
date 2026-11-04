@@ -7,7 +7,7 @@ Status: **Hackathon form submitted. Product still in development and not end-to-
 | Requirement | Current state | Exit criteria |
 | --- | --- | --- |
 | Clear purpose and intuitive flow | Implemented in source | Responsive browser acceptance on desktop and mobile |
-| Deterministic cost controls | 9 unit tests pass locally | Tests and CI pass on GitHub |
+| Deterministic cost controls | Eight client policy checks plus a server-owned signed-purchase ceiling | Server rejects inflated client caps before using SERV credits; CI passes |
 | Input constraints (unsafe URLs, unsupported POST) | Implemented | Negative inputs do not trigger inference or handoff |
 | SERV Reasoning | API integration in source, unverified live | Real authorized inference, schema-validated decision, visible model and errors |
 | Signed decision receipt | Server-signed V2 full bundle; handoff requires explicit verification and a decision under 10 minutes old | Live signing and verification via deployed app |
