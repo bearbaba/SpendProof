@@ -52,3 +52,15 @@ test('DENY and high risk are representable without treating them as approval',()
   assert.equal(r.recommendation,'DENY');
   assert.equal(r.risk,'high');
 });
+
+test('schema diagnostics reveal only trusted field names, never model values',()=>{
+  const privateMarker='NEVER-ECHO-UNTRUSTED-MODEL-CONTENT';
+  let message='';
+  try {parseServAssessment(JSON.stringify({...valid,summary:'short',risk:privateMarker,recommendation:privateMarker,concerns:privateMarker}));}
+  catch(err){message=err instanceof Error?err.message:String(err);}
+  assert.match(message,/summary/);
+  assert.match(message,/risk/);
+  assert.match(message,/concerns/);
+  assert.match(message,/recommendation/);
+  assert.doesNotMatch(message,/NEVER-ECHO/);
+});

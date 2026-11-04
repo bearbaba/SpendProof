@@ -36,7 +36,11 @@ test('one server-only SERV request signs complete output, not a payment receipt'
     assert.equal((init?.headers as Record<string,string>).Authorization,'Bearer private-serv-key-for-tests');
     const body=JSON.parse(String(init?.body));
     assert.equal(body.model,'serv-test-model');
-    assert.deepEqual(body.response_format,{type:'json_object'});
+    assert.equal(body.response_format.type,'json_schema');
+    assert.equal(body.response_format.json_schema.strict,true);
+    assert.deepEqual(body.response_format.json_schema.schema.required,['summary','risk','concerns','evidenceGaps','recommendation']);
+    assert.equal(body.response_format.json_schema.schema.additionalProperties,false);
+    assert.deepEqual(body.response_format.json_schema.schema.properties.recommendation.enum,['REVIEW','DENY']);
     assert.equal(body.max_completion_tokens,1200);
     assert.equal(body.messages.length,2);
     assert.equal(body.messages[1].role,'user');
