@@ -1,6 +1,6 @@
 # SpendProof — Acceptance gate (Kite track)
 
-Status: **Hackathon form submitted. Product still in development and not end-to-end validated.** The target is product-quality 9.5/10, not an achieved judge score.
+Status: **An OpenServ Hackathon 02 registration/feedback form was acknowledged; an official completed-project submission has not been independently confirmed. Product is not yet end-to-end validated.** The target is product-quality 9.5/10, not an achieved judge score.
 
 ## Definition of done
 
@@ -16,7 +16,7 @@ Status: **Hackathon form submitted. Product still in development and not end-to-
 | User-supplied Kite evidence comparison | Implemented without external Kite verification | Independently check success and settlement before advertising payment proof |
 | x402 payment | Not executed; no in-app payment API | Successful real/sandbox (as allowed by track) Kite payment and receipt, no placeholder |
 | Failure path | Mocked SERV error coverage and production HTTP smoke tests | Live invalid-key, expired-session, insufficient-budget and provider-error acceptance |
-| Public demo and X post | Public demo not deployed; X post URL not in repository | Public demo, walkthrough and tagged @openservai post URL archived |
+| Public demo and X post | Demo source and judge walkthrough are prepared; deployed URL and X post are not verified | Public demo, walkthrough and tagged @openservai post URL archived |
 
 ## Security acceptance: intent binding and request races
 

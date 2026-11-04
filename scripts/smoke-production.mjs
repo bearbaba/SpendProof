@@ -63,6 +63,11 @@ try {
   const html=await home.text();
   assert(home.status===200,'Home must render successfully');
   assert(html.includes('SpendProof'),'Home must contain product title');
+  assert(html.includes('Explore SpendProof without a wallet or API key'),
+    'Public demo instructions must be visible without credentials');
+  assert(html.includes('Illustrative providers are not payable merchants'),
+    'Public demo must not imply mock services accept payments');
+  assert(html.includes('Try the demo'),'The demo must have a clear primary action');
   assert(!html.includes(sentinel),'Home must never expose server-side API keys');
   console.log('PASS: public homepage rendered without credentials');
 
@@ -70,6 +75,7 @@ try {
   const statusJson=await status.json();
   assert(status.status===200,'Status endpoint must respond 200');
   assert(statusJson.servMode==='disabled','Paid SERV inference must default off');
+  assert(statusJson.serverReviewMaxUsd===1,'Server-owned default review cap should be 1 USDC');
   assert(statusJson.paymentExecution==='not-available-in-app','Kite payments must be outside the app');
   assert(status.headers.get('cache-control')?.includes('no-store'),'Status must be no-store');
   assert(!JSON.stringify(statusJson).includes(sentinel),'Status must not leak server secrets');
