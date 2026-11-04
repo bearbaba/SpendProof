@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { READ_ONLY_PROBES, summarizeKitePreflight, type CliProbeKey, type ProbeEvidence } from '../lib/kite-preflight.ts';
+import { READ_ONLY_PROBES, summarizeKitePreflight, kiteExecutableForPlatform, type CliProbeKey, type ProbeEvidence } from '../lib/kite-preflight.ts';
 
 const pass=(output:string):ProbeEvidence=>({ok:true,output});
 const fail=(output='not installed'):ProbeEvidence=>({ok:false,output});
@@ -77,4 +77,11 @@ test('a CLI version without valid verb help is insufficient for verified integra
   });
   assert.equal(result.readyForManualInspection,false);
   assert.equal(result.livePaymentVerified,false);
+});
+
+test('Native CLI preflight never requires a command shell on Windows',()=>{
+  assert.equal(kiteExecutableForPlatform('kpass','win32'),'kpass.exe');
+  assert.equal(kiteExecutableForPlatform('ksearch','win32'),'ksearch.exe');
+  assert.equal(kiteExecutableForPlatform('kpass','linux'),'kpass');
+  assert.equal(kiteExecutableForPlatform('ksearch','darwin'),'ksearch');
 });
