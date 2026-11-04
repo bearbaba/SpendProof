@@ -8,7 +8,7 @@ SpendProof evaluates whether an AI agent's proposed API purchase is within expli
 
 **Operator-observed real payment PASS:** after a fresh SERV-signed review (medium / REVIEW, verified HMAC and tamper rejection) and a passkey-approved dedicated Passport session limited to 0.01 USD per transaction and total, the builder executed **one external Kite CLI x402 GET** for IP402 on Base. Kite reported HTTP **200**, a successful x402 payment response, a real GeoIP JSON result, 0.01 USDC spent, and a `completed` payment event. Kite-reported Base USDC balance changed from 0.978938 to 0.968938. The transaction hash is [`0xe3e247e6cc7f3cd740ed7cc814f7d39f39e21f38e1633de6677cfe68175921cd`](https://basescan.org/tx/0xe3e247e6cc7f3cd740ed7cc814f7d39f39e21f38e1633de6677cfe68175921cd).
 
-**Evidence boundary:** these are operator-supplied authenticated Kite CLI and activity outputs, **not yet independently verified on-chain receipt data**. Separate Base transaction receipt and official USDC Transfer-log verification remains pending. SpendProof never executed the payment in its own browser/server; the CLI handoff is still external. See [Kite paid acceptance evidence](docs/KITE_PAID_ACCEPTANCE.md). Keep live SERV disabled in public production.
+**Evidence boundary:** the operator also provided a BaseScan transaction record reporting **Success** in block **53494088** and the matching **0.01 official Base USDC Transfer** to `0xEd617F79201248Df99909fBde4269b6EEAEE39B6`. This is user-supplied public-explorer evidence, not a directly fetched independent JSON-RPC receipt. SpendProof never executed the payment in its own browser/server; the CLI handoff is still external. See [Kite paid acceptance evidence](docs/KITE_PAID_ACCEPTANCE.md). Keep live SERV disabled in public production.
 
 ## Current scope
 
@@ -115,7 +115,7 @@ Run `npm run smoke:live` from a machine with internet access to check the **publ
 ## Current verification and limits
 
 - The local deterministic decision test suite can run without credentials using `npm test`.
-- The builder reported a live SERV smoke, an HMAC-verified signed live decision, localhost browser HTTP/signature verification, and one external Kite x402 payment on November 4, 2026. Independent Base receipt verification remains pending.
+- The builder reported a live SERV smoke, an HMAC-verified signed live decision, localhost browser HTTP/signature verification, and one external Kite x402 payment on November 4, 2026. The operator supplied matching BaseScan Success/USDC Transfer evidence; a reviewer could additionally check raw JSON-RPC receipt and finality.
 - Kite service discovery and passkey-approved x402 payment occur externally. A live Kite CLI transaction and activity were reported successful; see the separate paid acceptance report for evidence and independent-verification limits. The one-command `accept:kite` gate still rechecks only the catalog and HTTP 402 quote and never spends USDC.
 - HMAC authenticates the complete server-issued decision bundle and does **not** establish merchant identity, on-chain payment, or fulfillment.
 - Illustrative `example.org` providers are fixtures; do not send real payments to them.
