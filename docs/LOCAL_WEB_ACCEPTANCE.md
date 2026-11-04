@@ -2,6 +2,8 @@
 
 Status (2026-11-04): builder-reported terminal evidence confirms **one real signed SERV acceptance** using `gemini-3.1-flash-lite`. Output: `SERV_SIGNED_LIVE_ACCEPTANCE_PASS`, 916 prompt / 140 completion tokens, medium / REVIEW, `signatureValid=true`, `bundleIntact=true`, `tamperRejected=true`, `reviewGate=READY`, `paymentExecuted=false`. This proves the **local one-call CLI acceptance**, not the browser / Next.js HTTP workflow, merchant legitimacy or x402 payment. Keep the local signed receipt private; it is written to git-ignored `out/`.
 
+**Browser acceptance update (2026-11-04, operator screenshots): PASS.** The builder ran a single localhost IP402 review at 0.01 USDC, saw `Live SERV analysis` from `gemini-3.1-flash-lite` with medium risk and nine PASS policy controls (the 8 client checks plus `owner_ceiling`). In Audit trail, the `Server-signed decision` area displayed `Purchase, policy and SERV assessment verified · no payment verified` after verification. This establishes operator-observed success across browser `/api/analyze` and `/api/verify`, but the screenshots do not establish an external merchant, live catalog or settlement. No separate independent test of the operator's local machine was performed.
+
 ## Before the next paid request
 
 - Confirm the SERV console credit balance and provider-side credit cap. Each click of **Analyze with SERV** can consume credits. Do not retry automatically.
@@ -28,8 +30,8 @@ Status (2026-11-04): builder-reported terminal evidence confirms **one real sign
 | --- | --- | --- |
 | Live OpenServ inference | **Builder-reported PASS** | Real `SERV_LIVE_RESPONSE_VALID`, 590 input / 132 output tokens |
 | Signed live local assessment | **Builder-reported PASS** | Real `SERV_SIGNED_LIVE_ACCEPTANCE_PASS`, verified HMAC, tamper rejection, `paymentExecuted=false` |
-| Live browser `/api/analyze` | **PENDING** | One authorized local request returns `mode: serv-live` and matching signed decision |
-| Live browser `/api/verify` | **PENDING** | User sees verified signature for same intent |
+| Live browser `/api/analyze` | **PASS (builder screenshot, 2026-11-04)** | One localhost IP402 Live SERV analysis, medium risk, all nine policy checks pass |
+| Live browser `/api/verify` | **PASS (builder screenshot, 2026-11-04)** | Audit shows `Purchase, policy and SERV assessment verified · no payment verified` |
 | HTTP 402 quote, catalog and merchant | **Prior unpaid read-only observations; fresh review pending** | Fresh catalog + same-resource challenge and USDC amount |
 | Kite passkey-approved session | **PENDING** | Human approval for one narrow payment session |
 | x402 payment and independently checked receipt | **NOT EXECUTED** | Real transaction/service receipt and external verification |
