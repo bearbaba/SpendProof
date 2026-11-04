@@ -149,6 +149,7 @@ export default function Page() {
   function localCheck() {
     invalidatePendingAnalysis();
     setKiteSafety({...defaultKiteSafety});
+    setObservation({...emptyObservation});
     verificationNonce.current+=1;
     setVerification('idle');
     const checked=evaluate(proposal);
