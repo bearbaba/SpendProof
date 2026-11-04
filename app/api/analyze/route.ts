@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createHash, timingSafeEqual } from 'node:crypto';
-import { evaluate, validProposal } from '../../../lib/policy';
+import { validProposal } from '../../../lib/policy';
+import { evaluateSignedPolicy, resolveOwnerCeilingCents } from '../../../lib/owner-policy';
 import { requestServAssessment } from '../../../lib/serv-inference';
 import { localServGate } from '../../../lib/serv-guard';
 import { readBoundedJson, BoundedBodyError } from '../../../lib/limited-json';
@@ -40,7 +41,11 @@ export async function POST(req: NextRequest) {
   }
   if (!validProposal(proposal)) return respond({ code: 'INVALID', error: 'Invalid proposal.' }, 422);
 
-  const policy = evaluate(proposal);
+  const ownerCeiling=resolveOwnerCeilingCents(process.env.SPENDPROOF_MAX_SIGNED_TX_USD);
+  if(ownerCeiling===null){
+    return respond({code:'INVALID_OWNER_POLICY',error:'The server spending ceiling is not configured safely. No review has been signed.'},503);
+  }
+  const policy = evaluateSignedPolicy(proposal,ownerCeiling);
   if (policy.verdict === 'BLOCK') {
     return respond({ mode: 'policy', policy, serv: null, paymentExecuted: false });
   }
