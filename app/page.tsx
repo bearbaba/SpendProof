@@ -346,8 +346,8 @@ export default function Page() {
               </div>
               <label className="check-field"><input type="checkbox" checked={proposal.supportsX402} onChange={e=>update('supportsX402',e.target.checked)}/><span><strong>Provider claims x402 compatibility</strong><small>Check this only if you have a provider claim; it is not independent verification.</small></span></label>
               <div className="form-actions">
-                <button className="btn-outline" onClick={localCheck}><Play size={16}/> Check locally</button>
-                <button className="btn-dark" onClick={liveAnalysis} disabled={busy || servMode!=='live-enabled-unverified'} title={servMode!=='live-enabled-unverified'?'Live SERV is not configured on this deployment. Local demo checks are available.':'Runs one potentially paid SERV inference call'}>{busy?<LoaderCircle size={16} className="spinning"/>:<Sparkles size={16}/>} {busy?'Analyzing…':'Analyze with SERV'} <ArrowRight size={16}/></button>
+                <button className={servMode==='live-enabled-unverified'?'btn-outline':'btn-dark'} onClick={localCheck}><Play size={16}/> Run free policy check</button>
+                <button className={servMode==='live-enabled-unverified'?'btn-dark':'btn-outline serv-disabled'} onClick={liveAnalysis} disabled={busy || servMode!=='live-enabled-unverified'} title={servMode!=='live-enabled-unverified'?'Live SERV is intentionally disabled in the public demo. The free policy check remains available.':'Runs one potentially paid SERV inference call'}>{busy?<LoaderCircle size={16} className="spinning"/>:servMode==='live-enabled-unverified'?<Sparkles size={16}/>:<LockKeyhole size={16}/>} {busy?'Analyzing…':servMode==='live-enabled-unverified'?'Analyze with SERV':'SERV disabled on public demo'}</button>
               </div>
               {servMode==='live-enabled-unverified'
                 ? <div className="access-field"><LockKeyhole size={15}/><input type="password" value={access} onChange={e=>setAccess(e.target.value)} autoComplete="off" placeholder="Project access code for live SERV" aria-label="SERV access code"/><span>SERVER AUTH</span></div>
