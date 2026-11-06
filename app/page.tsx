@@ -356,12 +356,12 @@ export default function Page() {
             </section>
 
             <section className="panel decision-panel">
-              <div className="panel-header"><div className="panel-title"><span className="panel-icon"><ShieldCheck size={19}/></span><div><h3>Decision intelligence</h3><p>Deterministic controls, independent of AI.</p></div></div><span className="panel-label">LIVE PREVIEW</span></div>
+              <div className="panel-header"><div className="panel-title"><span className="panel-icon"><ShieldCheck size={19}/></span><div><h3>Decision intelligence</h3><p>Deterministic controls, independent of AI.</p></div></div><span className="panel-label">LOCAL POLICY PREVIEW</span></div>
               <div className={'verdict '+(policy.verdict==='BLOCK'?'blocked':'review')}>
-                <div><div className="verdict-label"><span className={'verdict-dot '+(policy.verdict==='BLOCK'?'red':'amber')}/>{policy.verdict==='BLOCK'?'POLICY BLOCKED':'REVIEW REQUIRED'}</div><strong>{policy.verdict==='BLOCK'?'This request must not proceed.':'Eligible for further review.'}</strong><p>{policy.verdict==='BLOCK'?'One or more spending controls failed. Fix the proposal before analysis.':'All local limits passed, but real provider checks and passkey approval are still outstanding.'}</p></div>
+                <div><div className="verdict-label"><span className={'verdict-dot '+(policy.verdict==='BLOCK'?'red':'amber')}/>{policy.verdict==='BLOCK'?'POLICY BLOCKED':'REVIEW REQUIRED'}</div><strong>{policy.verdict==='BLOCK'?'This request must not proceed.':'Local checks passed — not yet approved.'}</strong><p>{policy.verdict==='BLOCK'?'One or more spending controls failed. Fix the proposal before analysis.':'All local limits passed, but real provider checks and passkey approval are still outstanding.'}</p></div>
                 {policy.verdict==='BLOCK'?<ShieldAlert size={36}/>:<ShieldCheck size={36}/>}
               </div>
-              <div className="checks-heading"><strong>Safety controls</strong><span>{passed} of {policy.checks.length} passed</span></div>
+              <div className="checks-heading"><strong>Local safety checks</strong><span>{passed} of {policy.checks.length} passed · not payment approval</span></div>
               <div className="checks-progress"><span style={{width:(passed/policy.checks.length*100)+'%'}}/></div>
               <div className="checks-list">{policy.checks.map(c=><div className="check-row" key={c.id}><span className={'check-status '+(c.passed?'ok':'fail')}>{c.passed?<Check size={15}/>:<XCircle size={15}/>}</span><div><strong>{c.title}</strong><p>{c.detail}</p></div></div>)}</div>
               <div className="decision-bottom"><div className="decision-cost"><span>Proposed charge</span><strong>{usd(proposal.amountUsd)}</strong></div><div className="decision-cost"><span>Task ceiling</span><strong>{usd(proposal.budgetUsd)}</strong></div><div className="decision-cost"><span>Funds transferred</span><strong>$0.00</strong></div></div>
