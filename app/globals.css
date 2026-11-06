@@ -410,3 +410,40 @@ a { color:inherit; text-decoration:none; }
 .live-proof-caveat svg{flex-shrink:0;margin-top:1px}
 @media(max-width:920px){.journey{grid-template-columns:1fr}.journey-step{padding:12px 14px}.journey-copy>span{display:block}.live-proof-facts{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:520px){.live-proof{padding:16px}.live-proof-header{gap:10px}.live-proof-facts{gap:8px}.live-proof-facts>span{padding:10px}.journey{margin:16px 0}}
+
+
+/* Screenshot QA: improve desktop density and prevent unintended horizontal overflow. */
+html, body {max-width:100%;overflow-x:clip}
+.application {width:100%;max-width:100%;min-width:0}
+.main {width:0;min-width:0}
+.content {width:100%;max-width:1440px;margin:0 auto}
+.workspace-grid > *, .panel-title, .check-row > div {min-width:0}
+.panel-title h3, .panel-title p, .check-row p, .check-row strong {overflow-wrap:break-word}
+.checks-list {padding-bottom:6px}
+.check-row {padding:11px 1px}
+.checks-heading {gap:10px}
+.checks-heading span {text-align:right;line-height:1.45}
+.panel-header {padding-bottom:17px}
+@media (min-width:1200px) {
+ .sidebar {width:250px;flex-basis:250px}
+ .topbar {padding-inline:28px}
+ .content {padding:26px 28px 24px}
+ .workspace-grid {grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:16px}
+ .workspace-grid .panel {padding:19px}
+ .hero {min-height:270px;padding:32px 36px}
+ .stat-grid {margin-bottom:26px}
+}
+@media (min-width:761px) and (max-width:1199px) {
+ .content {padding:22px}
+ .workspace-grid {grid-template-columns:1fr}
+}
+@media (max-width:760px) {
+ .main {width:100%}
+ .journey-step {min-width:0}
+ .live-proof-facts {grid-template-columns:repeat(2,minmax(0,1fr))}
+ .check-row p {font-size:11px}
+}
+@media (prefers-reduced-motion: reduce) {
+ .journey-step {transition:none}
+ .journey-step:hover {transform:none}
+}
