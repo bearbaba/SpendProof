@@ -447,3 +447,45 @@ html, body {max-width:100%;overflow-x:clip}
  .journey-step {transition:none}
  .journey-step:hover {transform:none}
 }
+
+
+/* Desktop screenshot refinement: use available canvas and improve legibility. */
+.content {max-width:1800px}
+.panel-title h3 {font-size:15px}
+.panel-title p {font-size:12px;color:#65748a;line-height:1.45}
+.section-head p {font-size:13px;color:#64738b}
+.preset-top {font-size:12px;line-height:1.35}
+.preset > span:last-child {font-size:11px;line-height:1.5;color:#65748b}
+.preset-heading, .preset-heading span {font-size:11px}
+.catalog-candidate-info small {font-size:11px;line-height:1.55;color:#60718b}
+.field > span {font-size:12px}
+.field input, .field select, .field textarea {font-size:13px}
+.amount-input input {font-size:13px}
+.check-field strong {font-size:12px;line-height:1.5}
+.check-field small {font-size:11px;color:#63718a}
+.verdict-label {font-size:11px}
+.verdict strong {font-size:15px}
+.verdict p {font-size:12px;color:#8b7045}
+.checks-heading {font-size:13px}
+.checks-heading span {font-size:11px;color:#67758b}
+.check-row strong {font-size:12px;line-height:1.45}
+.check-row p {font-size:11px;line-height:1.55;color:#65748b}
+.decision-cost span {font-size:10px;color:#76849a}
+.decision-cost strong {font-size:16px}
+.demo-mode-hint {line-height:1.6}
+.form-actions .serv-disabled:disabled {opacity:1;background:#f3f5fa;color:#65718a;border-color:#dfe4ef;box-shadow:none;cursor:not-allowed}
+@media(min-width:1200px) {
+  .content {max-width:1800px;padding:26px 28px 24px}
+  .workspace-grid {grid-template-columns:minmax(0,1.04fr) minmax(0,1fr)}
+  .workspace-grid .panel {padding:22px}
+  .check-row {padding:13px 1px}
+}
+@media(min-width:761px) and (max-width:1199px) {
+  .content {max-width:100%}
+}
+@media(max-width:760px) {
+  .content {max-width:100%}
+  .check-row p {font-size:11px}
+  .preset-top {font-size:12px}
+  .form-actions .btn-dark, .form-actions .btn-outline {min-width:0}
+}
