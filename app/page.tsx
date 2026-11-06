@@ -248,22 +248,22 @@ export default function Page() {
       <div className="side-caption">AI PAYMENT INTELLIGENCE</div>
       <div className="sidebar-nav">
         <div className="nav-group-label">PLATFORM</div>
-        <button className={'nav-item '+(area==='workspace'?'selected':'')} onClick={()=>setArea('workspace')}><LayoutDashboard size={18}/> Decision workspace <ChevronRight className="nav-chevron" size={16}/></button>
-        <button className={'nav-item '+(area==='audit'?'selected':'')} onClick={()=>setArea('audit')}><FileCheck2 size={18}/> Audit trail <ChevronRight className="nav-chevron" size={16}/></button>
-        <button className={'nav-item '+(area==='passport'?'selected':'')} onClick={()=>setArea('passport')}><Wallet size={18}/> Kite handoff <ChevronRight className="nav-chevron" size={16}/></button>
+        <button className={'nav-item '+(area==='workspace'?'selected':'')} onClick={()=>setArea('workspace')}><LayoutDashboard size={18}/> 01 · Review <ChevronRight className="nav-chevron" size={16}/></button>
+        <button className={'nav-item '+(area==='passport'?'selected':'')} onClick={()=>setArea('passport')}><Wallet size={18}/> 02 · Authorize <ChevronRight className="nav-chevron" size={16}/></button>
+        <button className={'nav-item '+(area==='audit'?'selected':'')} onClick={()=>setArea('audit')}><FileCheck2 size={18}/> 03 · Verify & audit <ChevronRight className="nav-chevron" size={16}/></button>
         <div className="nav-group-label second">RESOURCES</div>
         <a className="nav-item nav-link" target="_blank" rel="noreferrer" href="https://docs.gokite.ai/passport/payments"><BookOpen size={18}/> Kite documentation <ArrowUpRight className="nav-chevron" size={15}/></a>
         <a className="nav-item nav-link" target="_blank" rel="noreferrer" href="https://www.openserv.ai/hackathon-2"><Globe2 size={18}/> Hackathon 02 <ArrowUpRight className="nav-chevron" size={15}/></a>
       </div>
       <div className="sidebar-bottom">
         <div className="system-box"><div className="system-head"><span className="pulse-dot"/> System integrity</div><strong>Policy engine ready</strong><span>{servMode==='live-enabled-unverified'?'SERV configured · not yet verified':servMode==='unknown'?'Checking server mode…':'SERV disabled · local policy only'}</span><span>{serverReviewCap!==null?'Server signing cap: '+usd(serverReviewCap)+' per purchase':'Server signing cap unavailable'}</span></div>
-        <div className="side-profile"><BrandMark small/><div><strong>Builder workspace</strong><span>Hackathon prototype · v0.1</span></div><span className="side-more">•••</span></div>
+        <div className="side-profile"><BrandMark small/><div><strong>Builder workspace</strong><span>Hackathon 02 · public demo</span></div><span className="side-more">•••</span></div>
       </div>
     </aside>
 
     <main className="main">
       <header className="topbar">
-        <div className="crumb"><span>Products</span><ChevronRight size={14}/><span>SpendProof</span><ChevronRight size={14}/><strong>{area==='workspace'?'Workspace':area==='audit'?'Audit trail':'Kite handoff'}</strong></div>
+        <div className="crumb"><span>Products</span><ChevronRight size={14}/><span>SpendProof</span><ChevronRight size={14}/><strong>{area==='workspace'?'Review':area==='passport'?'Authorize':'Verify & audit'}</strong></div>
         <div className="top-actions"><span className="top-tag"><span className="mini-pulse"/> Policy-first build</span><a href="https://github.com/bearbaba/SpendProof" target="_blank" rel="noreferrer" className="github-link">GitHub <ArrowUpRight size={15}/></a></div>
       </header>
 
@@ -286,11 +286,37 @@ export default function Page() {
           <div><span className="demo-intro-icon"><FlaskConical size={19}/></span><div><strong>Explore SpendProof without a wallet or API key</strong><p>Choose a sample request, run local guardrails, inspect the audit, then explore the separate Kite handoff. Illustrative providers are not payable merchants.</p></div></div>
           <span className="demo-intro-badge">SAFE DEMO</span>
         </div>
+        <nav className="journey" aria-label="Payment review workflow">
+          {([
+            {id:'workspace' as Area, number:'01', title:'Review', description:'Check proposal & limits', icon:<ClipboardCheck size={19}/>},
+            {id:'passport' as Area, number:'02', title:'Authorize', description:'Human-controlled Kite handoff', icon:<Fingerprint size={19}/>},
+            {id:'audit' as Area, number:'03', title:'Verify & audit', description:'Inspect signed decision & evidence', icon:<FileCheck2 size={19}/>},
+          ]).map(step=><button key={step.id} type="button" className={'journey-step'+(area===step.id?' active':'')} aria-current={area===step.id?'step':undefined} onClick={()=>setArea(step.id)}>
+            <span className="journey-icon">{step.icon}</span>
+            <span className="journey-copy"><small>STEP {step.number}</small><strong>{step.title}</strong><span>{step.description}</span></span>
+            <ArrowRight size={17} className="journey-arrow"/>
+          </button>)}
+        </nav>
         <div className="stat-grid">
           <div className="stat-card"><div className="stat-icon violet"><Shield size={19}/></div><div><span>Deterministic guardrails</span><strong>08 <small>checks</small></strong></div><span className="stat-foot">Always applied</span></div>
           <div className="stat-card"><div className="stat-icon blue"><Fingerprint size={19}/></div><div><span>Human authorization</span><strong>Required</strong></div><span className="stat-foot">Kite Passport</span></div>
           <div className="stat-card"><div className="stat-icon green"><ReceiptText size={19}/></div><div><span>Funds controlled by app</span><strong>$0.00</strong></div><span className="stat-foot">No custody</span></div>
         </div>
+
+        <section className="live-proof" aria-label="Documented live x402 acceptance">
+          <div className="live-proof-header"><div className="live-proof-icon"><CheckCircle2 size={21}/></div><div><span className="live-proof-kicker">DOCUMENTED REAL-WORLD ACCEPTANCE · NOV 04, 2026</span><h3>0.01 USDC x402 payment — external Kite CLI</h3><p>A passkey-approved, limited Kite Passport session completed an IP402 GeoIP GET on Base. This is an operator-documented prior transaction, <strong>not a payment made by this website</strong>.</p></div></div>
+          <div className="live-proof-facts">
+            <span><small>NETWORK</small><strong>Base Mainnet</strong></span>
+            <span><small>AMOUNT</small><strong>0.01 USDC</strong></span>
+            <span><small>API RESULT</small><strong>HTTP 200</strong></span>
+            <span><small>WEB PAYMENT</small><strong>Not supported</strong></span>
+          </div>
+          <div className="live-proof-links">
+            <a href="https://basescan.org/tx/0xe3e247e6cc7f3cd740ed7cc814f7d39f39e21f38e1633de6677cfe68175921cd" target="_blank" rel="noopener noreferrer">View on BaseScan <ExternalLink size={15}/></a>
+            <a href="https://github.com/bearbaba/SpendProof/blob/main/docs/KITE_PAID_ACCEPTANCE.md" target="_blank" rel="noopener noreferrer">Read evidence & limits <ExternalLink size={15}/></a>
+          </div>
+          <p className="live-proof-caveat"><Info size={15}/> Explorer transaction details were supplied during operator acceptance; SpendProof has not independently fetched an RPC receipt. User-entered activity in the Verify flow remains unverified.</p>
+        </section>
 
         {area==='workspace' && <>
           <div className="section-head" id="decision-workspace"><div><div className="section-kicker">DECISION LAB</div><h2>Review an agent purchase</h2><p>Run reproducible checks against an explicit payment proposal.</p></div><span className="section-step">01 / 03 · Validate</span></div>
@@ -351,7 +377,7 @@ export default function Page() {
         </>}
 
         {area==='audit' && <>
-          <div className="section-head"><div><div className="section-kicker">REPRODUCIBLE EVIDENCE</div><h2>Decision audit trail</h2><p>Every outcome is explicit. A local checksum is not a transaction receipt.</p></div><span className="section-step">02 / 03 · Trace</span></div>
+          <div className="section-head"><div><div className="section-kicker">REPRODUCIBLE EVIDENCE</div><h2>Verify & audit</h2><p>Verify the signed decision, inspect the evidence and export a record. A signature is not proof of payment.</p></div><span className="section-step">03 / 03 · Verify</span></div>
           <section className="panel audit-panel">
             <div className="panel-header"><div className="panel-title"><span className="panel-icon"><FileCheck2 size={19}/></span><div><h3>Latest evaluation</h3><p>Saved only in this browser tab until export.</p></div></div><span className="panel-label">LOCAL SESSION</span></div>
             {!report?<div className="empty-state"><div className="empty-icon"><Activity size={25}/></div><h3>No audit recorded yet</h3><p>Run a local policy check or a live SERV analysis in the workspace to create an audit.</p><button className="btn-dark" onClick={()=>setArea('workspace')}>Go to workspace <ArrowRight size={16}/></button></div>:
@@ -365,7 +391,7 @@ export default function Page() {
         </>}
 
         {area==='passport' && <>
-          <div className="section-head"><div><div className="section-kicker">HUMAN-IN-THE-LOOP</div><h2>Kite Passport handoff</h2><p>Inspect the real provider, obtain SERV assessment and explicitly approve a bounded Kite spending session.</p></div><span className="section-step">03 / 03 · Authorize</span></div>
+          <div className="section-head"><div><div className="section-kicker">HUMAN-IN-THE-LOOP</div><h2>Kite Passport handoff</h2><p>Inspect the real provider, obtain SERV assessment and explicitly approve a bounded Kite spending session.</p></div><span className="section-step">02 / 03 · Authorize</span></div>
           <div className="handoff-banner"><div className="handoff-badge"><Fingerprint size={24}/></div><div><h3>No payment is initiated by this browser.</h3><p>Kite currently exposes the approved flow through its CLI and agent skills. No public HTTP API is documented, so SpendProof generates commands instead of pretending to complete an x402 purchase. <a href="https://docs.gokite.ai/api-reference" target="_blank" rel="noreferrer">View the official API status <ExternalLink size={13}/></a></p></div></div>
           <section className="panel handoff-panel">
             <div className="panel-header"><div className="panel-title"><span className="panel-icon"><Code2 size={19}/></span><div><h3>Verified workflow, not automatic payment</h3><p>Copy the commands into your authenticated Kite-enabled terminal.</p></div></div><span className="panel-label">EXTERNAL CLI</span></div>
